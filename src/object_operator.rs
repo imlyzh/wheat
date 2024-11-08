@@ -1,5 +1,7 @@
 use crate::object_model::*;
 
+/// ## bool
+
 macro_rules! gen_is {
     ($name: ident, $expr: expr) => {
         #[inline]
@@ -12,8 +14,6 @@ macro_rules! gen_is {
         }
     };
 }
-
-// bool
 
 gen_is!(is_null, ObjectTag::Null);
 gen_is!(is_boolean, ObjectTag::Bool);
@@ -65,7 +65,7 @@ pub fn eqv(obj0: Slot, obj1: Slot) -> Slot {
     }
 }
 
-// pair
+/// ## pair
 
 // TODO: cons
 /// need heap alloc
@@ -227,3 +227,144 @@ pub unsafe fn assoc(obj: Slot, list: Slot) -> Slot {
 }
 */
 
+/// ## Symbol
+
+/// need heap alloc
+pub unsafe fn symbol2string(obj: Slot) -> Slot {
+    let sym = assert_get_symbol(obj);
+    todo!()
+}
+
+/*
+///  need heap alloc
+pub unsafe fn string2symbol(obj: Slot) -> Slot {
+    let str = assert_get_string(obj);
+    let ptr = (&str.instance) as *const u8;
+    let slice = std::slice::from_raw_parts(ptr, str.length);
+    let r = str::from_utf8(slice).unwrap();
+    // TODO: let r = r.global_intern();
+    // r as Slot
+    todo!()
+}
+// */
+
+/// ## number
+
+#[inline]
+pub unsafe fn raw_is_zero(i: Slot) -> bool {
+    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
+    let ptr = get_value(i) as *const Number;
+    (*ptr).value == 0
+}
+
+#[inline]
+pub unsafe fn raw_is_positive(i: Slot) -> bool {
+    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
+    let ptr = get_value(i) as *const Number;
+    ((*ptr).value >> 63) == 0
+}
+
+#[inline]
+pub unsafe fn raw_is_negative(i: Slot) -> bool {
+    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
+    let ptr = get_value(i) as *const Number;
+    ((*ptr).value >> 63) == 0
+}
+
+#[inline]
+pub unsafe fn raw_is_odd(i: Slot) -> bool {
+    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
+    let ptr = get_value(i) as *const Number;
+    ((*ptr).value % 2) != 0
+}
+
+#[inline]
+pub unsafe fn raw_is_even(i: Slot) -> bool {
+    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
+    let ptr = get_value(i) as *const Number;
+    ((*ptr).value % 2) == 0
+}
+
+#[inline]
+pub unsafe fn raw_math_eq(x0: Slot, x1: Slot) -> bool {
+    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
+    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
+    let ptr0 = get_value(x0) as *const Number;
+    let ptr1 = get_value(x1) as *const Number;
+    (*ptr0).value == (*ptr1).value
+}
+
+#[inline]
+pub unsafe fn raw_math_less(x0: Slot, x1: Slot) -> bool {
+    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
+    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
+    let ptr0 = get_value(x0) as *const Number;
+    let ptr1 = get_value(x1) as *const Number;
+    (*ptr0).value < (*ptr1).value
+}
+
+#[inline]
+pub unsafe fn raw_math_greater(x0: Slot, x1: Slot) -> bool {
+    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
+    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
+    let ptr0 = get_value(x0) as *const Number;
+    let ptr1 = get_value(x1) as *const Number;
+    (*ptr0).value > (*ptr1).value
+}
+
+#[inline]
+pub unsafe fn raw_math_less_eq(x0: Slot, x1: Slot) -> bool {
+    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
+    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
+    let ptr0 = get_value(x0) as *const Number;
+    let ptr1 = get_value(x1) as *const Number;
+    (*ptr0).value <= (*ptr1).value
+}
+
+
+#[inline]
+pub unsafe fn raw_math_greater_eq(x0: Slot, x1: Slot) -> bool {
+    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
+    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
+    let ptr0 = get_value(x0) as *const Number;
+    let ptr1 = get_value(x1) as *const Number;
+    (*ptr0).value >= (*ptr1).value
+}
+
+
+macro_rules! unwary_op_to_wheat {
+    ($name:ident, $raw_name:ident) => {
+        #[inline]
+        pub unsafe fn $name(x0: Slot) -> Slot {
+            if $raw_name(x0) {
+                TRUE
+            } else {
+                FALSE
+            }
+        }
+    };
+}
+
+macro_rules! binary_op_to_wheat {
+    ($name:ident, $raw_name:ident) => {
+        #[inline]
+        pub unsafe fn $name(x0: Slot, x1: Slot) -> Slot {
+            if $raw_name(x0, x1) {
+                TRUE
+            } else {
+                FALSE
+            }
+        }
+    };
+}
+
+unwary_op_to_wheat!(is_zero, raw_is_zero);
+unwary_op_to_wheat!(is_positive, raw_is_positive);
+unwary_op_to_wheat!(is_negative, raw_is_negative);
+unwary_op_to_wheat!(is_odd, raw_is_odd);
+unwary_op_to_wheat!(is_even, raw_is_even);
+binary_op_to_wheat!(math_eq, raw_math_eq);
+binary_op_to_wheat!(math_less, raw_math_less);
+binary_op_to_wheat!(math_less_eq, raw_math_less_eq);
+binary_op_to_wheat!(math_greater, raw_math_greater);
+binary_op_to_wheat!(math_greater_eq, raw_math_greater_eq);

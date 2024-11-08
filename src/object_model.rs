@@ -111,5 +111,27 @@ pub unsafe fn assert_get_number(obj: Slot) -> u64 {
 pub unsafe fn assert_get_pair(obj: Slot) -> Pair {
     assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
     let r = get_value(obj) as *mut Pair;
-    (*r).clone()
+    *r
+}
+
+#[inline(always)]
+pub unsafe fn assert_get_vector(obj: Slot) -> Vector {
+    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
+    let r = get_value(obj) as *mut Vector;
+    *r
+}
+
+#[inline(always)]
+pub unsafe fn assert_get_string(obj: Slot) -> String {
+    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
+    let r = get_value(obj) as *mut String;
+    *r
+}
+
+
+#[inline(always)]
+pub unsafe fn assert_get_symbol(obj: Slot) -> Symbol {
+    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
+    let r = get_value(obj) as *mut Symbol;
+    *r
 }

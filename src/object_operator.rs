@@ -155,7 +155,7 @@ pub unsafe fn memv(obj: Slot, list: Slot) -> Slot {
         if assert_get_bool(eqv(car(list), obj))  {
             list
         } else {
-            memq(obj, cdr(list))
+            memv(obj, cdr(list))
         }
     } else {
         NIL
@@ -171,10 +171,11 @@ pub unsafe fn member(obj: Slot, list: Slot) -> Slot {
         if assert_get_bool(equal(car(list), obj))  {
             list
         } else {
-            memq(obj, cdr(list))
+            member(obj, cdr(list))
         }
     } else {
         NIL
     }
 }
 */
+

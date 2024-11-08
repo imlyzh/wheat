@@ -18,6 +18,7 @@ pub enum ObjectTag {
 pub type Slot = u64;
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Number {
     pub moved: bool,
     // pub is_signed: bool,
@@ -25,12 +26,14 @@ pub struct Number {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Pair {
     pub car: Slot,
     pub cdr: Slot,
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector {
     pub moved: bool,
     pub length: usize,
@@ -38,6 +41,7 @@ pub struct Vector {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct String {
     pub moved: bool,
     pub length: usize,
@@ -45,8 +49,15 @@ pub struct String {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Copy, Eq, PartialOrd, Ord)]
 pub struct Symbol {
     pub value: NonNull<String>,
+}
+
+impl PartialEq for Symbol {
+    fn eq(&self, other: &Self) -> bool {
+        self.value.as_ptr() == other.value.as_ptr()
+    }
 }
 
 pub static VALUE_MASK: Slot = u64::MAX >> 12;
@@ -94,4 +105,11 @@ pub unsafe fn assert_get_number(obj: Slot) -> u64 {
     assert_eq!(get_tag(obj), ObjectTag::Number as u64);
     let r = get_value(obj) as *mut Number;
     (*r).value
+}
+
+#[inline(always)]
+pub unsafe fn assert_get_pair(obj: Slot) -> Pair {
+    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
+    let r = get_value(obj) as *mut Pair;
+    (*r).clone()
 }

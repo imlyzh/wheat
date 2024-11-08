@@ -179,3 +179,51 @@ pub unsafe fn member(obj: Slot, list: Slot) -> Slot {
 }
 */
 
+
+pub unsafe fn assq(obj: Slot, list: Slot) -> Slot {
+    if list == NIL {
+        return FALSE;
+    }
+    if get_tag(list) == ObjectTag::Pair as u64 {
+        if assert_get_bool(eq(car(car(list)), obj))  {
+            list
+        } else {
+            assq(obj, cdr(list))
+        }
+    } else {
+        NIL
+    }
+}
+
+pub unsafe fn assv(obj: Slot, list: Slot) -> Slot {
+    if list == NIL {
+        return FALSE;
+    }
+    if get_tag(list) == ObjectTag::Pair as u64 {
+        if assert_get_bool(eqv(car(car(list)), obj))  {
+            list
+        } else {
+            assq(obj, cdr(list))
+        }
+    } else {
+        NIL
+    }
+}
+
+/* TODO: impl equal
+pub unsafe fn assoc(obj: Slot, list: Slot) -> Slot {
+    if list == NIL {
+        return FALSE;
+    }
+    if get_tag(list) == ObjectTag::Pair as u64 {
+        if assert_get_bool(equal(car(car(list)), obj))  {
+            list
+        } else {
+            assoc(obj, cdr(list))
+        }
+    } else {
+        NIL
+    }
+}
+*/
+

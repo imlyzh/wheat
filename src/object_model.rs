@@ -1,7 +1,9 @@
+use std::ptr::NonNull;
+
 // 4bit
 #[repr(u8)]
 pub enum ObjectTag {
-    Nil = 0,
+    Null = 0,
     Bool,
     Char,
     Number,
@@ -14,6 +16,38 @@ pub enum ObjectTag {
 }
 
 pub type Slot = u64;
+
+#[repr(C)]
+pub struct Number {
+    pub moved: bool,
+    // pub is_signed: bool,
+    pub value: Slot,
+}
+
+#[repr(C)]
+pub struct Pair {
+    pub car: Slot,
+    pub cdr: Slot,
+}
+
+#[repr(C)]
+pub struct Vector {
+    pub moved: bool,
+    pub length: usize,
+    pub instance: [Slot; 1],
+}
+
+#[repr(C)]
+pub struct String {
+    pub moved: bool,
+    pub length: usize,
+    pub instance: [u8; 1],
+}
+
+#[repr(C)]
+pub struct Symbol {
+    pub value: NonNull<String>,
+}
 
 pub static VALUE_MASK: Slot = u64::MAX >> 12;
 
@@ -32,68 +66,32 @@ pub fn get_is_moved(arg: Slot) -> u64 {
 }
 
 #[inline(always)]
-pub fn get_ptr(arg: Slot) -> u64 {
+pub fn get_value(arg: Slot) -> u64 {
     arg & VALUE_MASK
 }
 
-macro_rules! gen_is {
-    ($name: ident, $expr: expr) => {
-        #[inline]
-        pub fn $name(arg: Slot) -> Slot {
-            if get_tag(arg) == $expr as u64 {
-                TRUE
-            } else {
-                FALSE
-            }
-        }
-    };
+/// Host (Rust) and guest (Wheat) language interaction operator
+
+#[inline(always)]
+pub unsafe fn assert_null(obj: Slot) {
+    assert_eq!(get_tag(obj), ObjectTag::Null as u64);
 }
 
-gen_is!(is_nil, ObjectTag::Nil);
-gen_is!(is_boolean, ObjectTag::Bool);
-gen_is!(is_char, ObjectTag::Char);
-gen_is!(is_number, ObjectTag::Number);
-gen_is!(is_pair, ObjectTag::Pair);
-gen_is!(is_vector, ObjectTag::Vector);
-gen_is!(is_string, ObjectTag::String);
-gen_is!(is_symbol, ObjectTag::Symbol);
-gen_is!(is_closure, ObjectTag::Closure);
-gen_is!(is_native, ObjectTag::NativeFunction);
-
-#[inline]
-pub fn not(arg: Slot) -> Slot {
-    if arg == NIL || arg == FALSE {
-        TRUE
-    } else {
-        FALSE
-    }
+#[inline(always)]
+pub unsafe fn assert_get_bool(obj: Slot) -> bool {
+    assert_eq!(get_tag(obj), ObjectTag::Bool as u64);
+    get_value(obj) == 1
 }
 
-#[inline]
-pub fn eq(arg0: Slot, arg1: Slot) -> Slot {
-    if arg0 == arg1 {
-        TRUE
-    } else {
-        FALSE
-    }
+#[inline(always)]
+pub unsafe fn assert_get_char(obj: Slot) -> u8 {
+    assert_eq!(get_tag(obj), ObjectTag::Bool as u64);
+    get_value(obj) as u8
 }
 
-#[inline]
-pub fn eqv(arg0: Slot, arg1: Slot) -> Slot {
-    /* fastpath
-    if arg0 == arg1 {
-        return TRUE;
-    }
-    // */
-    let tag0 = get_tag(arg0);
-    let tag1 = get_tag(arg1);
-    if tag0 != tag1 {
-        return FALSE;
-    }
-    if tag0 <= ObjectTag::Char as u64 {
-        return eq(arg0, arg1);
-    }
-    match tag0 {
-        _ => FALSE,
-    }
+#[inline(always)]
+pub unsafe fn assert_get_number(obj: Slot) -> u64 {
+    assert_eq!(get_tag(obj), ObjectTag::Number as u64);
+    let r = get_value(obj) as *mut Number;
+    (*r).value
 }

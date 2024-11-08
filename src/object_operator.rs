@@ -5,11 +5,11 @@ use crate::object_model::*;
 macro_rules! gen_is {
     ($name: ident, $expr: expr) => {
         #[inline]
-        pub fn $name(arg: Slot) -> Slot {
-            if get_tag(arg) == $expr as u64 {
-                TRUE
+        pub unsafe fn $name(arg: Slot) -> Slot {
+            if get_tag(arg) == $expr {
+                (&TRUE) as *const Bool as Slot
             } else {
-                FALSE
+                (&FALSE) as *const Bool as Slot
             }
         }
     };
@@ -27,25 +27,25 @@ gen_is!(is_closure, ObjectTag::Closure);
 gen_is!(is_native, ObjectTag::NativeFunction);
 
 #[inline]
-pub fn not(obj: Slot) -> Slot {
-    if obj == NIL || obj == FALSE {
-        TRUE
+pub unsafe fn not(obj: Slot) -> Slot {
+    if *(obj as *const Null) == NULL || *(obj as *const Bool) == FALSE {
+        (&TRUE) as *const Bool as Slot
     } else {
-        FALSE
+        (&FALSE) as *const Bool as Slot
     }
 }
 
 #[inline]
 pub fn eq(obj0: Slot, obj1: Slot) -> Slot {
     if obj0 == obj1 {
-        TRUE
+        (&TRUE) as *const Bool as Slot
     } else {
-        FALSE
+        (&FALSE) as *const Bool as Slot
     }
 }
 
 #[inline]
-pub fn eqv(obj0: Slot, obj1: Slot) -> Slot {
+pub unsafe fn eqv(obj0: Slot, obj1: Slot) -> Slot {
     /* fastpath
     if arg0 == arg1 {
         return TRUE;
@@ -54,14 +54,14 @@ pub fn eqv(obj0: Slot, obj1: Slot) -> Slot {
     let tag0 = get_tag(obj0);
     let tag1 = get_tag(obj1);
     if tag0 != tag1 {
-        return FALSE;
+        return (&FALSE) as *const Bool as Slot;
     }
-    if tag0 <= ObjectTag::Char as u64 {
+    if tag0 as u8 <= ObjectTag::Char as u8 {
         return eq(obj0, obj1);
     }
     match tag0 {
         // TODO: impl all type =?
-        _ => FALSE,
+        _ => (&FALSE) as *const Bool as Slot,
     }
 }
 
@@ -75,29 +75,29 @@ pub unsafe fn cons(obj0: Slot, obj1: Slot) -> Slot {
 
 #[inline]
 pub unsafe fn car(pair: Slot) -> Slot {
-    assert_eq!(get_tag(pair), ObjectTag::Pair as u64);
-    let ptr = get_value(pair) as *const Pair;
-    (*ptr).car
+    assert_eq!(get_tag(pair), ObjectTag::Pair);
+    let ptr = pair as *const Pair;
+    (*ptr).car as Slot
 }
 
 #[inline]
 pub unsafe fn cdr(pair: Slot) -> Slot {
-    assert_eq!(get_tag(pair), ObjectTag::Pair as u64);
-    let ptr = get_value(pair) as *const Pair;
-    (*ptr).cdr
+    assert_eq!(get_tag(pair), ObjectTag::Pair);
+    let ptr = pair as *const Pair;
+    (*ptr).cdr as Slot
 }
 
 #[inline]
 pub unsafe fn set_car(pair: Slot, obj: Slot) {
-    assert_eq!(get_tag(pair), ObjectTag::Pair as u64);
-    let ptr = get_value(pair) as *mut Pair;
+    assert_eq!(get_tag(pair), ObjectTag::Pair);
+    let ptr = pair as *mut Pair;
     (*ptr).car = obj;
 }
 
 #[inline]
 pub unsafe fn set_cdr(pair: Slot, obj: Slot) {
-    assert_eq!(get_tag(pair), ObjectTag::Pair as u64);
-    let ptr = get_value(pair) as *mut Pair;
+    assert_eq!(get_tag(pair), ObjectTag::Pair);
+    let ptr = pair as *mut Pair;
     (*ptr).cdr = obj;
 }
 
@@ -109,12 +109,12 @@ pub unsafe fn list(objs: &[Slot]) -> Slot {
 
 #[inline]
 pub unsafe fn raw_length(list: Slot) -> usize {
-    if list == NIL {
+    if get_tag(list) == ObjectTag::Null {
         return 0;
     }
-    assert_eq!(get_tag(list), ObjectTag::Pair as u64);
+    assert_eq!(get_tag(list), ObjectTag::Pair);
     let next = cdr(list);
-    if next == NIL {
+    if get_tag(list) == ObjectTag::Null {
         return 1;
     }
     raw_length(next) + 1
@@ -133,80 +133,79 @@ pub unsafe fn append(list0: Slot, list1: Slot) -> Slot {
 }
 
 pub unsafe fn memq(obj: Slot, list: Slot) -> Slot {
-    if list == NIL {
-        return FALSE;
+    if get_tag(list) == ObjectTag::Null {
+        return (&FALSE) as *const Bool as Slot;
     }
-    if get_tag(list) == ObjectTag::Pair as u64 {
-        if assert_get_bool(eq(car(list), obj))  {
+    if get_tag(list) == ObjectTag::Pair {
+        if assert_get_bool(eq(car(list), obj)) {
             list
         } else {
             memq(obj, cdr(list))
         }
     } else {
-        NIL
+        (&NULL) as *const Null as Slot
     }
 }
 
 pub unsafe fn memv(obj: Slot, list: Slot) -> Slot {
-    if list == NIL {
-        return FALSE;
+    if get_tag(list) == ObjectTag::Null {
+        return (&FALSE) as *const Bool as Slot;
     }
-    if get_tag(list) == ObjectTag::Pair as u64 {
-        if assert_get_bool(eqv(car(list), obj))  {
+    if get_tag(list) == ObjectTag::Pair {
+        if assert_get_bool(eqv(car(list), obj)) {
             list
         } else {
             memv(obj, cdr(list))
         }
     } else {
-        NIL
+        return (&NULL) as *const Null as Slot;
     }
 }
 
 /* TODO: impl equal
 pub unsafe fn member(obj: Slot, list: Slot) -> Slot {
-    if list == NIL {
-        return FALSE;
+    if get_tag(list) == ObjectTag::Null {
+        return (&FALSE) as *const Bool as Slot;
     }
-    if get_tag(list) == ObjectTag::Pair as u64 {
+    if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(equal(car(list), obj))  {
             list
         } else {
             member(obj, cdr(list))
         }
     } else {
-        NIL
+        return (&NULL) as *const Null as Slot;
     }
 }
 */
 
-
 pub unsafe fn assq(obj: Slot, list: Slot) -> Slot {
-    if list == NIL {
-        return FALSE;
+    if get_tag(list) == ObjectTag::Null {
+        return (&FALSE) as *const Bool as Slot;
     }
-    if get_tag(list) == ObjectTag::Pair as u64 {
-        if assert_get_bool(eq(car(car(list)), obj))  {
+    if get_tag(list) == ObjectTag::Pair {
+        if assert_get_bool(eq(car(car(list)), obj)) {
             list
         } else {
             assq(obj, cdr(list))
         }
     } else {
-        NIL
+        (&NULL) as *const Null as Slot
     }
 }
 
 pub unsafe fn assv(obj: Slot, list: Slot) -> Slot {
-    if list == NIL {
-        return FALSE;
+    if get_tag(list) == ObjectTag::Null {
+        return (&FALSE) as *const Bool as Slot;
     }
-    if get_tag(list) == ObjectTag::Pair as u64 {
-        if assert_get_bool(eqv(car(car(list)), obj))  {
+    if get_tag(list) == ObjectTag::Pair {
+        if assert_get_bool(eqv(car(car(list)), obj)) {
             list
         } else {
             assq(obj, cdr(list))
         }
     } else {
-        NIL
+        (&NULL) as *const Null as Slot
     }
 }
 
@@ -252,94 +251,92 @@ pub unsafe fn string2symbol(obj: Slot) -> Slot {
 
 #[inline]
 pub unsafe fn raw_is_zero(i: Slot) -> bool {
-    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
-    let ptr = get_value(i) as *const Number;
+    debug_assert_eq!(get_tag(i), ObjectTag::Number);
+    let ptr = i as *const Number;
     (*ptr).value == 0
 }
 
 #[inline]
 pub unsafe fn raw_is_positive(i: Slot) -> bool {
-    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
-    let ptr = get_value(i) as *const Number;
+    debug_assert_eq!(get_tag(i), ObjectTag::Number);
+    let ptr = i as *const Number;
     ((*ptr).value >> 63) == 0
 }
 
 #[inline]
 pub unsafe fn raw_is_negative(i: Slot) -> bool {
-    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
-    let ptr = get_value(i) as *const Number;
+    debug_assert_eq!(get_tag(i), ObjectTag::Number);
+    let ptr = i as *const Number;
     ((*ptr).value >> 63) == 0
 }
 
 #[inline]
 pub unsafe fn raw_is_odd(i: Slot) -> bool {
-    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
-    let ptr = get_value(i) as *const Number;
+    debug_assert_eq!(get_tag(i), ObjectTag::Number);
+    let ptr = i as *const Number;
     ((*ptr).value % 2) != 0
 }
 
 #[inline]
 pub unsafe fn raw_is_even(i: Slot) -> bool {
-    debug_assert_eq!(get_tag(i), ObjectTag::Number as u64);
-    let ptr = get_value(i) as *const Number;
+    debug_assert_eq!(get_tag(i), ObjectTag::Number);
+    let ptr = i as *const Number;
     ((*ptr).value % 2) == 0
 }
 
 #[inline]
 pub unsafe fn raw_math_eq(x0: Slot, x1: Slot) -> bool {
-    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
-    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
-    let ptr0 = get_value(x0) as *const Number;
-    let ptr1 = get_value(x1) as *const Number;
+    assert_eq!(get_tag(x0), ObjectTag::Number);
+    assert_eq!(get_tag(x1), ObjectTag::Number);
+    let ptr0 = x0 as *const Number;
+    let ptr1 = x1 as *const Number;
     (*ptr0).value == (*ptr1).value
 }
 
 #[inline]
 pub unsafe fn raw_math_less(x0: Slot, x1: Slot) -> bool {
-    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
-    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
-    let ptr0 = get_value(x0) as *const Number;
-    let ptr1 = get_value(x1) as *const Number;
+    assert_eq!(get_tag(x0), ObjectTag::Number);
+    assert_eq!(get_tag(x1), ObjectTag::Number);
+    let ptr0 = x0 as *const Number;
+    let ptr1 = x1 as *const Number;
     (*ptr0).value < (*ptr1).value
 }
 
 #[inline]
 pub unsafe fn raw_math_greater(x0: Slot, x1: Slot) -> bool {
-    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
-    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
-    let ptr0 = get_value(x0) as *const Number;
-    let ptr1 = get_value(x1) as *const Number;
+    assert_eq!(get_tag(x0), ObjectTag::Number);
+    assert_eq!(get_tag(x1), ObjectTag::Number);
+    let ptr0 = x0 as *const Number;
+    let ptr1 = x1 as *const Number;
     (*ptr0).value > (*ptr1).value
 }
 
 #[inline]
 pub unsafe fn raw_math_less_eq(x0: Slot, x1: Slot) -> bool {
-    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
-    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
-    let ptr0 = get_value(x0) as *const Number;
-    let ptr1 = get_value(x1) as *const Number;
+    assert_eq!(get_tag(x0), ObjectTag::Number);
+    assert_eq!(get_tag(x1), ObjectTag::Number);
+    let ptr0 = x0 as *const Number;
+    let ptr1 = x1 as *const Number;
     (*ptr0).value <= (*ptr1).value
 }
 
-
 #[inline]
 pub unsafe fn raw_math_greater_eq(x0: Slot, x1: Slot) -> bool {
-    assert_eq!(get_tag(x0), ObjectTag::Number as u64);
-    assert_eq!(get_tag(x1), ObjectTag::Number as u64);
-    let ptr0 = get_value(x0) as *const Number;
-    let ptr1 = get_value(x1) as *const Number;
+    assert_eq!(get_tag(x0), ObjectTag::Number);
+    assert_eq!(get_tag(x1), ObjectTag::Number);
+    let ptr0 = x0 as *const Number;
+    let ptr1 = x1 as *const Number;
     (*ptr0).value >= (*ptr1).value
 }
-
 
 macro_rules! unwary_op_to_wheat {
     ($name:ident, $raw_name:ident) => {
         #[inline]
         pub unsafe fn $name(x0: Slot) -> Slot {
             if $raw_name(x0) {
-                TRUE
+                (&TRUE) as *const Bool as Slot
             } else {
-                FALSE
+                (&FALSE) as *const Bool as Slot
             }
         }
     };
@@ -350,9 +347,9 @@ macro_rules! binary_op_to_wheat {
         #[inline]
         pub unsafe fn $name(x0: Slot, x1: Slot) -> Slot {
             if $raw_name(x0, x1) {
-                TRUE
+                (&TRUE) as *const Bool as Slot
             } else {
-                FALSE
+                (&FALSE) as *const Bool as Slot
             }
         }
     };

@@ -1,7 +1,7 @@
 use std::ptr::NonNull;
 
-// 4bit
 #[repr(u8)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ObjectTag {
     Null = 0,
     Bool,
@@ -15,19 +15,50 @@ pub enum ObjectTag {
     NativeFunction,
 }
 
-pub type Slot = u64;
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ObjectHead {
+    pub tag: ObjectTag,
+    pub moved: bool,
+    // _align: u32
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Null {
+    pub head: ObjectHead,
+    // pub is_signed: bool,
+    pub value: ()
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Bool {
+    pub head: ObjectHead,
+    // pub is_signed: bool,
+    pub value: bool
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Char {
+    pub head: ObjectHead,
+    // pub is_signed: bool,
+    pub value: u8
+}
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Number {
-    pub moved: bool,
+    pub head: ObjectHead,
     // pub is_signed: bool,
-    pub value: Slot,
+    pub value: i64,
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Pair {
+    pub head: ObjectHead,
     pub car: Slot,
     pub cdr: Slot,
 }
@@ -35,7 +66,7 @@ pub struct Pair {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector {
-    pub moved: bool,
+    pub head: ObjectHead,
     pub length: usize,
     pub instance: [Slot; 1],
 }
@@ -43,7 +74,7 @@ pub struct Vector {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct String {
-    pub moved: bool,
+    pub head: ObjectHead,
     pub length: usize,
     pub instance: [u8; 1],
 }
@@ -60,78 +91,71 @@ impl PartialEq for Symbol {
     }
 }
 
-pub static VALUE_MASK: Slot = u64::MAX >> 12;
+pub static NULL: Null = Null { head: ObjectHead { tag: ObjectTag::Null, moved: false }, value: () };
+pub static FALSE: Bool = Bool { head: ObjectHead { tag: ObjectTag::Null, moved: false }, value: false };
+pub static TRUE:  Bool = Bool { head: ObjectHead { tag: ObjectTag::Null, moved: false }, value: true };
 
-pub static NIL: Slot = 0;
-pub static FALSE: Slot = (ObjectTag::Bool as u64) << 60;
-pub static TRUE: Slot = FALSE | 1;
+pub type Slot = *mut ObjectHead;
 
 #[inline(always)]
-pub fn get_tag(arg: Slot) -> u64 {
-    arg >> 60
+pub unsafe fn get_tag(arg: Slot) -> ObjectTag {
+    (*arg).tag
 }
 
 #[inline(always)]
-pub fn get_is_moved(arg: Slot) -> u64 {
-    (arg << 4) >> 63
+pub unsafe fn get_is_moved(arg: Slot) -> bool {
+    (*arg).moved
 }
-
-#[inline(always)]
-pub fn get_value(arg: Slot) -> u64 {
-    arg & VALUE_MASK
-}
-
-/// Host (Rust) and guest (Wheat) language interaction operator
 
 #[inline(always)]
 pub unsafe fn assert_null(obj: Slot) {
-    assert_eq!(get_tag(obj), ObjectTag::Null as u64);
+    assert_eq!(get_tag(obj), ObjectTag::Null);
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_bool(obj: Slot) -> bool {
-    assert_eq!(get_tag(obj), ObjectTag::Bool as u64);
-    get_value(obj) == 1
+    assert_eq!(get_tag(obj), ObjectTag::Bool);
+    (*(obj as *mut Bool)).value
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_char(obj: Slot) -> u8 {
-    assert_eq!(get_tag(obj), ObjectTag::Bool as u64);
-    get_value(obj) as u8
+    assert_eq!(get_tag(obj), ObjectTag::Char);
+    (*(obj as *mut Char)).value
 }
 
 #[inline(always)]
-pub unsafe fn assert_get_number(obj: Slot) -> u64 {
-    assert_eq!(get_tag(obj), ObjectTag::Number as u64);
-    let r = get_value(obj) as *mut Number;
+pub unsafe fn assert_get_number(obj: Slot) -> i64 {
+    assert_eq!(get_tag(obj), ObjectTag::Number);
+    let r = obj as *mut Number;
     (*r).value
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_pair(obj: Slot) -> Pair {
-    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
-    let r = get_value(obj) as *mut Pair;
+    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    let r = obj as *mut Pair;
     *r
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_vector(obj: Slot) -> Vector {
-    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
-    let r = get_value(obj) as *mut Vector;
+    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    let r = obj as *mut Vector;
     *r
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_string(obj: Slot) -> String {
-    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
-    let r = get_value(obj) as *mut String;
+    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    let r = obj as *mut String;
     *r
 }
 
 
 #[inline(always)]
 pub unsafe fn assert_get_symbol(obj: Slot) -> Symbol {
-    assert_eq!(get_tag(obj), ObjectTag::Pair as u64);
-    let r = get_value(obj) as *mut Symbol;
+    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    let r = obj as *mut Symbol;
     *r
 }

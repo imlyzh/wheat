@@ -8,7 +8,7 @@ pub struct SemiSpaceMemory {
     pub pool1: *mut u8,
     pub start_pointer: *mut u8,
 
-    pointer_compress: bool,
+    // pointer_compress: bool,
     alloc_count: usize, // alloc_count <= pool_size
     // align: usize,       // Must be greater than default, default == 4B(32bit)
 
@@ -30,7 +30,7 @@ impl Default for SemiSpaceMemory {
             pool0: std::ptr::null_mut(),
             pool1: std::ptr::null_mut(),
             start_pointer: std::ptr::null_mut(),
-            pointer_compress: false,
+            // pointer_compress: false,
             alloc_count: 0,
             size_limit: 0,
         }
@@ -51,7 +51,7 @@ impl SemiSpaceMemory {
             pool1,
             start_pointer: pool0,
 
-            pointer_compress,
+            // pointer_compress,
             alloc_count: 0,
             size_limit: pool_size,
         }

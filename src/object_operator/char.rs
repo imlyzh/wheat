@@ -1,6 +1,5 @@
 use crate::object_model::*;
 
-
 /// Char
 
 #[inline]
@@ -48,8 +47,6 @@ pub unsafe fn raw_char_greater_eq(x0: Slot, x1: Slot) -> bool {
     (*ptr0).value >= (*ptr1).value
 }
 
-
-
 macro_rules! unwary_bool_op_to_wheat {
     ($name:ident, $raw_name:ident) => {
         #[inline]
@@ -68,9 +65,9 @@ macro_rules! binary_bool_op_to_wheat {
         #[inline]
         pub unsafe fn $name(x0: Slot, x1: Slot) -> Slot {
             if $raw_name(x0, x1) {
-                (&TRUE) as *const Bool as Slot
+                (&TRUE) as *const SingleData as Slot
             } else {
-                (&FALSE) as *const Bool as Slot
+                (&FALSE) as *const SingleData as Slot
             }
         }
     };
@@ -83,51 +80,49 @@ binary_bool_op_to_wheat!(char_less_eq, raw_char_less_eq);
 binary_bool_op_to_wheat!(char_greater, raw_char_greater);
 binary_bool_op_to_wheat!(char_greater_eq, raw_char_greater_eq);
 
-
 #[inline]
 pub unsafe fn raw_char_add(x0: Slot, x1: Slot) -> u8 {
     assert_eq!(get_tag(x0), ObjectTag::Number);
     assert_eq!(get_tag(x1), ObjectTag::Number);
-    let ptr0 = x0 as *const Char;
-    let ptr1 = x1 as *const Char;
-    (*ptr0).value + (*ptr1).value
+    let ptr0 = x0 as *const SingleData;
+    let ptr1 = x1 as *const SingleData;
+    ((*ptr0).value as u8) + ((*ptr1).value as u8)
 }
 
 #[inline]
 pub unsafe fn raw_char_sub(x0: Slot, x1: Slot) -> u8 {
     assert_eq!(get_tag(x0), ObjectTag::Number);
     assert_eq!(get_tag(x1), ObjectTag::Number);
-    let ptr0 = x0 as *const Char;
-    let ptr1 = x1 as *const Char;
-    (*ptr0).value - (*ptr1).value
+    let ptr0 = x0 as *const SingleData;
+    let ptr1 = x1 as *const SingleData;
+    ((*ptr0).value as u8) - ((*ptr1).value as u8)
 }
-
 
 #[inline]
 pub unsafe fn raw_char_mul(x0: Slot, x1: Slot) -> u8 {
     assert_eq!(get_tag(x0), ObjectTag::Number);
     assert_eq!(get_tag(x1), ObjectTag::Number);
-    let ptr0 = x0 as *const Char;
-    let ptr1 = x1 as *const Char;
-    (*ptr0).value * (*ptr1).value
+    let ptr0 = x0 as *const SingleData;
+    let ptr1 = x1 as *const SingleData;
+    ((*ptr0).value as u8) * ((*ptr1).value as u8)
 }
 
 #[inline]
 pub unsafe fn raw_char_div(x0: Slot, x1: Slot) -> u8 {
     assert_eq!(get_tag(x0), ObjectTag::Number);
     assert_eq!(get_tag(x1), ObjectTag::Number);
-    let ptr0 = x0 as *const Char;
-    let ptr1 = x1 as *const Char;
-    (*ptr0).value / (*ptr1).value
+    let ptr0 = x0 as *const SingleData;
+    let ptr1 = x1 as *const SingleData;
+    ((*ptr0).value as u8) / ((*ptr1).value as u8)
 }
 
 #[inline]
 pub unsafe fn raw_char_mod(x0: Slot, x1: Slot) -> u8 {
     assert_eq!(get_tag(x0), ObjectTag::Number);
     assert_eq!(get_tag(x1), ObjectTag::Number);
-    let ptr0 = x0 as *const Char;
-    let ptr1 = x1 as *const Char;
-    (*ptr0).value % (*ptr1).value
+    let ptr0 = x0 as *const SingleData;
+    let ptr1 = x1 as *const SingleData;
+    ((*ptr0).value as u8) % ((*ptr1).value as u8)
 }
 
 macro_rules! binary_number_op_to_wheat {
@@ -135,7 +130,13 @@ macro_rules! binary_number_op_to_wheat {
         #[inline]
         pub unsafe fn $name(x0: Slot, x1: Slot) -> Slot {
             let r = $raw_name(x0, x1);
-            let _r = Char { head: ObjectHead { tag: ObjectTag::Char, moved: false }, value: r };
+            let _r = SingleData {
+                head: ObjectHead {
+                    tag: ObjectTag::Char,
+                    moved: false,
+                },
+                value: r as u64,
+            };
             // alloc
             todo!()
         }
@@ -150,9 +151,15 @@ binary_number_op_to_wheat!(char_mod, raw_char_mod);
 
 pub unsafe fn char2int(obj: Slot) -> Slot {
     assert_eq!(get_tag(obj), ObjectTag::Char);
-    let ptr = obj as *const Char;
+    let ptr = obj as *const SingleData;
     let value = (*ptr).value as i64;
-    let _v = Number { head: ObjectHead { tag: ObjectTag::Number, moved: false }, value };
+    let _v = Number {
+        head: ObjectHead {
+            tag: ObjectTag::Number,
+            moved: false,
+        },
+        value,
+    };
     // todo: alloc
     todo!()
 }
@@ -161,7 +168,13 @@ pub unsafe fn int2char(obj: Slot) -> Slot {
     assert_eq!(get_tag(obj), ObjectTag::Char);
     let ptr = obj as *const Number;
     let value = (*ptr).value as u8;
-    let _v = Char { head: ObjectHead { tag: ObjectTag::Char, moved: false }, value };
+    let _v = SingleData {
+        head: ObjectHead {
+            tag: ObjectTag::Char,
+            moved: false,
+        },
+        value: value as u64,
+    };
     // todo: alloc
     todo!()
 }

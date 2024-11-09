@@ -71,7 +71,7 @@ pub unsafe fn append(list0: Slot, list1: Slot) -> Slot {
 
 pub unsafe fn memq(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const Bool as Slot;
+        return (&FALSE) as *const SingleData as Slot;
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eq(car(list), obj)) {
@@ -80,13 +80,13 @@ pub unsafe fn memq(obj: Slot, list: Slot) -> Slot {
             memq(obj, cdr(list))
         }
     } else {
-        (&NULL) as *const Null as Slot
+        (&NULL) as *const SingleData as Slot
     }
 }
 
 pub unsafe fn memv(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const Bool as Slot;
+        return (&FALSE) as *const SingleData as Slot;
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eqv(car(list), obj)) {
@@ -95,7 +95,7 @@ pub unsafe fn memv(obj: Slot, list: Slot) -> Slot {
             memv(obj, cdr(list))
         }
     } else {
-        return (&NULL) as *const Null as Slot;
+        return (&NULL) as *const SingleData as Slot;
     }
 }
 
@@ -118,7 +118,7 @@ pub unsafe fn member(obj: Slot, list: Slot) -> Slot {
 
 pub unsafe fn assq(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const Bool as Slot;
+        return (&FALSE) as *const SingleData as Slot;
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eq(car(car(list)), obj)) {
@@ -127,13 +127,13 @@ pub unsafe fn assq(obj: Slot, list: Slot) -> Slot {
             assq(obj, cdr(list))
         }
     } else {
-        (&NULL) as *const Null as Slot
+        (&NULL) as *const SingleData as Slot
     }
 }
 
 pub unsafe fn assv(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const Bool as Slot;
+        return (&FALSE) as *const SingleData as Slot;
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eqv(car(car(list)), obj)) {
@@ -142,7 +142,7 @@ pub unsafe fn assv(obj: Slot, list: Slot) -> Slot {
             assq(obj, cdr(list))
         }
     } else {
-        (&NULL) as *const Null as Slot
+        (&NULL) as *const SingleData as Slot
     }
 }
 

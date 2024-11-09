@@ -21,36 +21,63 @@ pub enum ObjectTag {
 pub struct ObjectHead {
     pub tag: ObjectTag,
     pub moved: bool,
-    // _align: u32
+}
+
+pub trait Length {
+    fn length(&self) -> usize;
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Null {
+pub struct SingleData {
     pub head: ObjectHead,
-    pub value: (),
+    pub value: u64,
 }
 
-#[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Bool {
-    pub head: ObjectHead,
-    // pub is_signed: bool,
-    pub value: bool,
+impl Length for SingleData {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>()
+    }
 }
 
-#[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Char {
-    pub head: ObjectHead,
-    pub value: u8,
-}
+// #[repr(C)]
+// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+// pub struct Bool {
+//     pub head: ObjectHead,
+//     // pub is_signed: bool,
+//     pub value: bool,
+// }
+
+// impl Length for Bool {
+//     fn length(&self) -> usize {
+//         std::mem::size_of::<Self>()
+//     }
+// }
+
+// #[repr(C)]
+// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+// pub struct Char {
+//     pub head: ObjectHead,
+//     pub value: u8,
+// }
+
+// impl Length for Char {
+//     fn length(&self) -> usize {
+//         std::mem::size_of::<Self>()
+//     }
+// }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Number {
     pub head: ObjectHead,
     pub value: i64,
+}
+
+impl Length for Number {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>()
+    }
 }
 
 #[repr(C)]
@@ -61,20 +88,40 @@ pub struct Pair {
     pub cdr: Slot,
 }
 
+impl Length for Pair {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>()
+    }
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector {
     pub head: ObjectHead,
-    pub length: u32,
+    pub length: u64,
     pub instance: [Slot; 1],
 }
+
+
+impl Length for Vector {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>() + (self.length as usize - 1) * std::mem::size_of::<Slot>()
+    }
+}
+
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct String {
     pub head: ObjectHead,
-    pub length: u32,
+    pub length: u64,
     pub instance: [u8; 1],
+}
+
+impl Length for String {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>() + (self.length as usize - 1) * std::mem::size_of::<u8>()
+    }
 }
 
 #[repr(C)]
@@ -83,32 +130,41 @@ pub struct Symbol {
     pub value: NonNull<String>,
 }
 
+
+impl Length for Symbol {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>()
+    }
+}
+
 impl PartialEq for Symbol {
     fn eq(&self, other: &Self) -> bool {
         self.value.as_ptr() == other.value.as_ptr()
     }
 }
 
-pub static NULL: Null = Null {
+pub static NULL: SingleData = SingleData {
     head: ObjectHead {
         tag: ObjectTag::Null,
-        moved: false,
+        moved: true,
     },
-    value: (),
+    value: 0,
 };
-pub static FALSE: Bool = Bool {
+
+pub static FALSE: SingleData = SingleData {
     head: ObjectHead {
-        tag: ObjectTag::Null,
-        moved: false,
+        tag: ObjectTag::Bool,
+        moved: true,
     },
-    value: false,
+    value: 0,
 };
-pub static TRUE: Bool = Bool {
+
+pub static TRUE: SingleData = SingleData {
     head: ObjectHead {
-        tag: ObjectTag::Null,
-        moved: false,
+        tag: ObjectTag::Bool,
+        moved: true,
     },
-    value: true,
+    value: 1,
 };
 
 pub type Slot = *mut ObjectHead;
@@ -131,13 +187,13 @@ pub unsafe fn assert_null(obj: Slot) {
 #[inline(always)]
 pub unsafe fn assert_get_bool(obj: Slot) -> bool {
     assert_eq!(get_tag(obj), ObjectTag::Bool);
-    (*(obj as *mut Bool)).value
+    (*(obj as *mut SingleData)).value == 1
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_char(obj: Slot) -> u8 {
     assert_eq!(get_tag(obj), ObjectTag::Char);
-    (*(obj as *mut Char)).value
+    (*(obj as *mut SingleData)).value as u8
 }
 
 #[inline(always)]

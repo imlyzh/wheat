@@ -2,7 +2,7 @@ use std::ptr::NonNull;
 
 use crate::{object_model::*, scope_model::Scope};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SemiSpaceMemory {
     pub pool0: *mut u8,
     pub pool1: *mut u8,

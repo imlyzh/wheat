@@ -1,6 +1,6 @@
 use std::ptr::NonNull;
 
-use crate::{memory_manage::SemiSpaceMemory, scope_model::Scope};
+use crate::{memory_manage::SemiSpaceMemory, scope_model::Scope, vm_state::VMState};
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -37,8 +37,8 @@ pub struct SingleData {
 }
 
 impl SingleData {
-    pub unsafe fn alloc(mm: &mut SemiSpaceMemory, current: NonNull<Scope>) -> NonNull<SingleData> {
-        let r = mm.alloc(current, std::mem::size_of::<Self>()).as_ptr();
+    pub unsafe fn alloc(vms: &mut VMState) -> NonNull<SingleData> {
+        let r = vms.alloc(std::mem::size_of::<Self>());
         let r = r as *mut SingleData;
         NonNull::new_unchecked(r)
     }

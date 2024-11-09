@@ -109,15 +109,16 @@ impl SemiSpaceMemory {
                 }
                 ObjectTag::Vector => {
                     let len = (*(coped_obj as *mut Vector)).length;
-                    let data = &mut (*(coped_obj as *mut Vector)).instance[0];
-                    // for i in 0..(len as usize) {
-                    //     const PTRSIZE: usize = std::mem::size_of::<usize>();
-                    //     *data.add(i * PTRSIZE) = self.copy(free, alloc_cur, *data.add(i * PTRSIZE));
-                    // }
+                    let data = &mut (*(coped_obj as *mut Vector)).instance[0] as *mut *mut ObjectHead;
+                    for i in 0..(len as usize) {
+                        const PTRSIZE: usize = std::mem::size_of::<usize>();
+                        *data.add(i * PTRSIZE) = self.copy(free, alloc_cur, *data.add(i * PTRSIZE));
+                    }
                     unimplemented!()
                 }
                 _ => {}
             }
+            (*(coped_obj as *mut SingleData)).value = coped_obj as u64;
             return coped_obj;
         }
         obj
@@ -143,7 +144,6 @@ impl SemiSpaceMemory {
         }
         let dst = free.add(*alloc_cur);
         std::ptr::copy(dst, obj as *mut u8, obj_size);
-        (*(obj as *mut SingleData)).value = dst as u64;
         *alloc_cur = *alloc_cur + obj_size;
         dst as Slot
     }

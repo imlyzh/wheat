@@ -13,6 +13,7 @@ pub enum ObjectTag {
     Symbol,
     Closure,
     NativeFunction,
+    Opaque,
 }
 
 #[repr(C)]
@@ -27,8 +28,7 @@ pub struct ObjectHead {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Null {
     pub head: ObjectHead,
-    // pub is_signed: bool,
-    pub value: ()
+    pub value: (),
 }
 
 #[repr(C)]
@@ -36,22 +36,20 @@ pub struct Null {
 pub struct Bool {
     pub head: ObjectHead,
     // pub is_signed: bool,
-    pub value: bool
+    pub value: bool,
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Char {
     pub head: ObjectHead,
-    // pub is_signed: bool,
-    pub value: u8
+    pub value: u8,
 }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Number {
     pub head: ObjectHead,
-    // pub is_signed: bool,
     pub value: i64,
 }
 
@@ -67,7 +65,7 @@ pub struct Pair {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector {
     pub head: ObjectHead,
-    pub length: usize,
+    pub length: u32,
     pub instance: [Slot; 1],
 }
 
@@ -75,7 +73,7 @@ pub struct Vector {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct String {
     pub head: ObjectHead,
-    pub length: usize,
+    pub length: u32,
     pub instance: [u8; 1],
 }
 
@@ -91,9 +89,27 @@ impl PartialEq for Symbol {
     }
 }
 
-pub static NULL: Null = Null { head: ObjectHead { tag: ObjectTag::Null, moved: false }, value: () };
-pub static FALSE: Bool = Bool { head: ObjectHead { tag: ObjectTag::Null, moved: false }, value: false };
-pub static TRUE:  Bool = Bool { head: ObjectHead { tag: ObjectTag::Null, moved: false }, value: true };
+pub static NULL: Null = Null {
+    head: ObjectHead {
+        tag: ObjectTag::Null,
+        moved: false,
+    },
+    value: (),
+};
+pub static FALSE: Bool = Bool {
+    head: ObjectHead {
+        tag: ObjectTag::Null,
+        moved: false,
+    },
+    value: false,
+};
+pub static TRUE: Bool = Bool {
+    head: ObjectHead {
+        tag: ObjectTag::Null,
+        moved: false,
+    },
+    value: true,
+};
 
 pub type Slot = *mut ObjectHead;
 
@@ -151,7 +167,6 @@ pub unsafe fn assert_get_string(obj: Slot) -> String {
     let r = obj as *mut String;
     *r
 }
-
 
 #[inline(always)]
 pub unsafe fn assert_get_symbol(obj: Slot) -> Symbol {

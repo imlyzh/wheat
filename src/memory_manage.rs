@@ -72,7 +72,7 @@ impl SemiSpaceMemory {
         }
         let ret_ptr = self.start_pointer.add(self.alloc_count);
         self.alloc_count += alloc_size;
-        NonNull::new(ret_ptr as *mut ObjectHead).unwrap()
+        NonNull::new_unchecked(ret_ptr as *mut ObjectHead)
     }
 
     pub unsafe fn gc(&mut self, current: NonNull<Scope>) {

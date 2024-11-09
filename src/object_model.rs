@@ -1,5 +1,7 @@
 use std::ptr::NonNull;
 
+use crate::{memory_manage::SemiSpaceMemory, scope_model::Scope};
+
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ObjectTag {
@@ -32,6 +34,14 @@ pub trait Length {
 pub struct SingleData {
     pub head: ObjectHead,
     pub value: u64,
+}
+
+impl SingleData {
+    pub unsafe fn alloc(mm: &mut SemiSpaceMemory, current: NonNull<Scope>) -> NonNull<SingleData> {
+        let r = mm.alloc(current, std::mem::size_of::<Self>()).as_ptr();
+        let r = r as *mut SingleData;
+        NonNull::new_unchecked(r)
+    }
 }
 
 impl Length for SingleData {
@@ -80,6 +90,14 @@ impl Length for Number {
     }
 }
 
+impl Number {
+    pub unsafe fn alloc(mm: &mut SemiSpaceMemory, current: NonNull<Scope>) -> NonNull<Number> {
+        let r = mm.alloc(current, std::mem::size_of::<Self>()).as_ptr();
+        let r = r as *mut Number;
+        NonNull::new_unchecked(r)
+    }
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Pair {
@@ -94,6 +112,14 @@ impl Length for Pair {
     }
 }
 
+impl Pair {
+    pub unsafe fn alloc(mm: &mut SemiSpaceMemory, current: NonNull<Scope>) -> NonNull<Pair> {
+        let r = mm.alloc(current, std::mem::size_of::<Self>()).as_ptr();
+        let r = r as *mut Pair;
+        NonNull::new_unchecked(r)
+    }
+}
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector {
@@ -102,13 +128,11 @@ pub struct Vector {
     pub instance: [Slot; 1],
 }
 
-
 impl Length for Vector {
     fn length(&self) -> usize {
         std::mem::size_of::<Self>() + (self.length as usize - 1) * std::mem::size_of::<Slot>()
     }
 }
-
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -129,7 +153,6 @@ impl Length for String {
 pub struct Symbol {
     pub value: NonNull<String>,
 }
-
 
 impl Length for Symbol {
     fn length(&self) -> usize {

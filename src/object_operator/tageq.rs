@@ -7,9 +7,9 @@ macro_rules! gen_is {
         #[inline]
         pub unsafe fn $name(arg: Slot) -> Slot {
             if get_tag(arg) == $expr {
-                (&TRUE) as *const SingleData as Slot
+                make_bool(true)
             } else {
-                (&FALSE) as *const SingleData as Slot
+                make_bool(false)
             }
         }
     };
@@ -29,18 +29,18 @@ gen_is!(is_native, ObjectTag::NativeFunction);
 #[inline]
 pub unsafe fn not(obj: Slot) -> Slot {
     if *(obj as *const SingleData) == NULL || *(obj as *const SingleData) == FALSE {
-        (&TRUE) as *const SingleData as Slot
+        make_bool(true)
     } else {
-        (&FALSE) as *const SingleData as Slot
+        make_bool(false)
     }
 }
 
 #[inline]
 pub fn eq(obj0: Slot, obj1: Slot) -> Slot {
     if obj0 == obj1 {
-        (&TRUE) as *const SingleData as Slot
+        make_bool(true)
     } else {
-        (&FALSE) as *const SingleData as Slot
+        make_bool(false)
     }
 }
 
@@ -54,13 +54,13 @@ pub unsafe fn eqv(obj0: Slot, obj1: Slot) -> Slot {
     let tag0 = get_tag(obj0);
     let tag1 = get_tag(obj1);
     if tag0 != tag1 {
-        return (&FALSE) as *const SingleData as Slot;
+        return make_bool(false)
     }
     if tag0 as u8 <= ObjectTag::Char as u8 {
         return eq(obj0, obj1);
     }
     match tag0 {
         // TODO: impl all type =?
-        _ => (&FALSE) as *const SingleData as Slot,
+        _ => make_bool(false),
     }
 }

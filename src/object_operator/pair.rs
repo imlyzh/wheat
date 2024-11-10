@@ -71,7 +71,7 @@ pub unsafe fn append(list0: Slot, list1: Slot) -> Slot {
 
 pub unsafe fn memq(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const SingleData as Slot;
+        return make_bool(false);
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eq(car(list), obj)) {
@@ -80,13 +80,13 @@ pub unsafe fn memq(obj: Slot, list: Slot) -> Slot {
             memq(obj, cdr(list))
         }
     } else {
-        (&NULL) as *const SingleData as Slot
+        make_null()
     }
 }
 
 pub unsafe fn memv(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const SingleData as Slot;
+        return make_bool(false);
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eqv(car(list), obj)) {
@@ -95,14 +95,14 @@ pub unsafe fn memv(obj: Slot, list: Slot) -> Slot {
             memv(obj, cdr(list))
         }
     } else {
-        return (&NULL) as *const SingleData as Slot;
+        make_null()
     }
 }
 
 /* TODO: impl equal
 pub unsafe fn member(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const Bool as Slot;
+        return make_bool(false);
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(equal(car(list), obj))  {
@@ -111,14 +111,14 @@ pub unsafe fn member(obj: Slot, list: Slot) -> Slot {
             member(obj, cdr(list))
         }
     } else {
-        return (&NULL) as *const Null as Slot;
+        make_null()
     }
 }
 */
 
 pub unsafe fn assq(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const SingleData as Slot;
+        return make_bool(false);
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eq(car(car(list)), obj)) {
@@ -127,13 +127,13 @@ pub unsafe fn assq(obj: Slot, list: Slot) -> Slot {
             assq(obj, cdr(list))
         }
     } else {
-        (&NULL) as *const SingleData as Slot
+        make_null()
     }
 }
 
 pub unsafe fn assv(obj: Slot, list: Slot) -> Slot {
     if get_tag(list) == ObjectTag::Null {
-        return (&FALSE) as *const SingleData as Slot;
+        return make_bool(false);
     }
     if get_tag(list) == ObjectTag::Pair {
         if assert_get_bool(eqv(car(car(list)), obj)) {
@@ -142,14 +142,14 @@ pub unsafe fn assv(obj: Slot, list: Slot) -> Slot {
             assq(obj, cdr(list))
         }
     } else {
-        (&NULL) as *const SingleData as Slot
+        make_null()
     }
 }
 
 /* TODO: impl equal
 pub unsafe fn assoc(obj: Slot, list: Slot) -> Slot {
     if list == NIL {
-        return FALSE;
+        return make_bool(false);
     }
     if get_tag(list) == ObjectTag::Pair as u64 {
         if assert_get_bool(equal(car(car(list)), obj))  {
@@ -158,8 +158,7 @@ pub unsafe fn assoc(obj: Slot, list: Slot) -> Slot {
             assoc(obj, cdr(list))
         }
     } else {
-        NIL
+        make_null()
     }
 }
 */
-

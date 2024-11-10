@@ -44,6 +44,18 @@ impl SingleData {
     }
 }
 
+pub unsafe fn make_null() -> Slot {
+    (&NULL) as *const SingleData as Slot
+}
+
+pub fn make_bool(b: bool) -> Slot {
+    if b {
+        (&TRUE) as *const SingleData as Slot
+    } else {
+        (&FALSE) as *const SingleData as Slot
+    }
+}
+
 impl Length for SingleData {
     fn length(&self) -> usize {
         std::mem::size_of::<Self>()

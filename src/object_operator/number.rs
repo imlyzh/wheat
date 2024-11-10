@@ -89,9 +89,9 @@ macro_rules! unwary_bool_op_to_wheat {
         #[inline]
         pub unsafe fn $name(x0: Slot) -> Slot {
             if $raw_name(x0) {
-                (&TRUE) as *const SingleData as Slot
+                make_bool(true)
             } else {
-                (&FALSE) as *const SingleData as Slot
+                make_bool(false)
             }
         }
     };
@@ -102,9 +102,9 @@ macro_rules! binary_bool_op_to_wheat {
         #[inline]
         pub unsafe fn $name(x0: Slot, x1: Slot) -> Slot {
             if $raw_name(x0, x1) {
-                (&TRUE) as *const SingleData as Slot
+                make_bool(true)
             } else {
-                (&FALSE) as *const SingleData as Slot
+                make_bool(false)
             }
         }
     };

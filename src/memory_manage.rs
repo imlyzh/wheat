@@ -118,10 +118,10 @@ impl SemiSpaceMemory {
                 }
                 _ => {}
             }
-            (*(coped_obj as *mut SingleData)).value = coped_obj as u64;
+            (*(obj as *mut SingleData)).value = coped_obj as u64;
             return coped_obj;
         }
-        obj
+        (*(obj as *mut SingleData)).value as Slot
     }
 
     unsafe fn copy_data(&mut self, free: *mut u8, alloc_cur: &mut usize, obj: Slot) -> Slot {

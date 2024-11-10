@@ -114,7 +114,6 @@ impl SemiSpaceMemory {
                         const PTRSIZE: usize = std::mem::size_of::<usize>();
                         *data.add(i * PTRSIZE) = self.copy(free, alloc_cur, *data.add(i * PTRSIZE));
                     }
-                    unimplemented!()
                 }
                 _ => {}
             }

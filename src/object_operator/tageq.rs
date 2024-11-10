@@ -3,6 +3,28 @@ use crate::make_object::*;
 
 /// # bool
 
+
+macro_rules! gen_raw_is {
+    ($name: ident, $expr: expr) => {
+        #[inline]
+        pub unsafe fn $name(arg: Slot) -> bool {
+            get_tag(arg) == $expr
+        }
+    };
+}
+
+gen_raw_is!(raw_is_null, ObjectTag::Null);
+gen_raw_is!(raw_is_boolean, ObjectTag::Bool);
+gen_raw_is!(raw_is_char, ObjectTag::Char);
+gen_raw_is!(raw_is_number, ObjectTag::Number);
+gen_raw_is!(raw_is_pair, ObjectTag::Pair);
+gen_raw_is!(raw_is_vector, ObjectTag::Vector);
+gen_raw_is!(raw_is_string, ObjectTag::String);
+gen_raw_is!(raw_is_symbol, ObjectTag::Symbol);
+gen_raw_is!(raw_is_closure, ObjectTag::Closure);
+gen_raw_is!(raw_is_native, ObjectTag::NativeFunction);
+
+
 macro_rules! gen_is {
     ($name: ident, $expr: expr) => {
         #[inline]

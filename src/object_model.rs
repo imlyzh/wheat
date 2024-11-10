@@ -44,18 +44,6 @@ impl SingleData {
     }
 }
 
-pub unsafe fn make_null() -> Slot {
-    (&NULL) as *const SingleData as Slot
-}
-
-pub fn make_bool(b: bool) -> Slot {
-    if b {
-        (&TRUE) as *const SingleData as Slot
-    } else {
-        (&FALSE) as *const SingleData as Slot
-    }
-}
-
 impl Length for SingleData {
     fn length(&self) -> usize {
         std::mem::size_of::<Self>()
@@ -177,30 +165,6 @@ impl PartialEq for Symbol {
         self.value.as_ptr() == other.value.as_ptr()
     }
 }
-
-pub static NULL: SingleData = SingleData {
-    head: ObjectHead {
-        tag: ObjectTag::Null,
-        moved: true,
-    },
-    value: 0,
-};
-
-pub static FALSE: SingleData = SingleData {
-    head: ObjectHead {
-        tag: ObjectTag::Bool,
-        moved: true,
-    },
-    value: 0,
-};
-
-pub static TRUE: SingleData = SingleData {
-    head: ObjectHead {
-        tag: ObjectTag::Bool,
-        moved: true,
-    },
-    value: 1,
-};
 
 pub type Slot = *mut ObjectHead;
 

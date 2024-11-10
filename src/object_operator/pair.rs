@@ -1,4 +1,5 @@
-use crate::object_model::*;
+use crate::{object_model::*, vm_state::VMState};
+use crate::make_object::*;
 
 use super::tageq::{eq, eqv};
 
@@ -6,8 +7,8 @@ use super::tageq::{eq, eqv};
 
 // TODO: cons
 /// need heap alloc
-pub unsafe fn cons(obj0: Slot, obj1: Slot) -> Slot {
-    todo!()
+pub unsafe fn cons(vms: &mut VMState, obj0: Slot, obj1: Slot) -> Slot {
+    make_pair(vms, obj0, obj1)
 }
 
 #[inline]

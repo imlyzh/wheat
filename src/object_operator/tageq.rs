@@ -1,4 +1,5 @@
 use crate::object_model::*;
+use crate::make_object::*;
 
 /// # bool
 

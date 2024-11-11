@@ -124,7 +124,7 @@ impl Pair {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Vector {
     pub head: ObjectHead,
-    pub length: u64,
+    pub length: usize,
     pub instance: [Slot; 1],
 }
 
@@ -138,7 +138,7 @@ impl Length for Vector {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SingleByteString {
     pub head: ObjectHead,
-    pub length: u64,
+    pub length: usize,
     pub instance: [u8; 1],
 }
 

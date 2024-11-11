@@ -166,7 +166,7 @@ dependencies = [
 [[package]]
 name = "sexpr_ir"
 version = "0.7.2"
-source = "git+https://github.com/imlyzh/sexpr_ir.git#b1b9f5d66ac28f5a5d32a74a81376fe6edd2f71c"
+source = "git+https://github.com/imlyzh/sexpr_ir.git#08165f32c99eb9a4dbc88c2fcc80eaeb1ac1a8e6"
 dependencies = [
  "lazy_static",
  "pest",

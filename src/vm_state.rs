@@ -13,17 +13,15 @@ pub struct VMState {
     pub symbol_cache: HashSet<String>,
 }
 
+impl Drop for VMState {
+    fn drop(&mut self) {}
+}
+
 impl VMState {
     pub unsafe fn alloc(&mut self, size: usize) -> Slot {
-        if let Some(current) = self.current {
-            self.heap.alloc(current, size).as_mut()
-        } else {
-            // FIXME
-            let r = self.heap.start_pointer.add(self.heap.alloc_count) as Slot;
-            self.heap.alloc_count += size;
-            r
-        }
+        self.heap.alloc(self.current, size).as_mut()
     }
+
     pub unsafe fn new_scope(&mut self, variable: Slot, name: Option<Symbol>) -> Self {
         let scope = self.alloc(std::mem::size_of::<Scope>());
         let scope_ref = &mut (*(scope as *mut Scope));

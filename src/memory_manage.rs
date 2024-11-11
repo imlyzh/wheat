@@ -61,7 +61,7 @@ impl SemiSpaceMemory {
 impl SemiSpaceMemory {
     pub unsafe fn alloc(
         &mut self,
-        current: NonNull<Scope>,
+        current: Option<NonNull<Scope>>,
         alloc_size: usize,
     ) -> NonNull<ObjectHead> {
         if !self.alloc_count + alloc_size >= self.size_limit {
@@ -75,14 +75,14 @@ impl SemiSpaceMemory {
         NonNull::new_unchecked(ret_ptr as *mut ObjectHead)
     }
 
-    pub unsafe fn gc(&mut self, current: NonNull<Scope>) {
+    pub unsafe fn gc(&mut self, current: Option<NonNull<Scope>>) {
         let free = if self.start_pointer == self.pool0 {
             self.pool1
         } else {
             self.pool0
         };
         let mut alloc_cur: usize = 0;
-        let mut current = Some(current);
+        let mut current = current;
         loop {
             if current.is_none() {
                 break;

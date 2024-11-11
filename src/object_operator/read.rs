@@ -10,6 +10,7 @@ use sexpr_ir::{
 
 pub unsafe fn read_(vms: &mut VMState, i: &str) -> Slot {
     let r = one_unit_parse(i, "<read>").unwrap();
+    println!("{:?}", r);
     gast2slot(vms, &r)
 }
 
@@ -36,7 +37,7 @@ pub unsafe fn gast2slot(vms: &mut VMState, r: &GAst) -> Slot {
     if let Some(r) = r.get_list() {
         let mut slot = make_null();
         for i in 0..(r.0.len()) {
-            let i = r.0.get(r.0.len() - 1 - i).unwrap_unchecked();
+            let i: &GAst = r.0.get(r.0.len() - 1 - i).unwrap();
             let car = gast2slot(vms, i);
             slot = make_pair(vms, car, slot);
         }

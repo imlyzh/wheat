@@ -91,8 +91,8 @@ impl Length for Number {
 }
 
 impl Number {
-    pub unsafe fn alloc(mm: &mut SemiSpaceMemory, current: NonNull<Scope>) -> NonNull<Number> {
-        let r = mm.alloc(current, std::mem::size_of::<Self>()).as_ptr();
+    pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Number> {
+        let r = vms.alloc(std::mem::size_of::<Self>());
         let r = r as *mut Number;
         NonNull::new_unchecked(r)
     }
@@ -113,8 +113,8 @@ impl Length for Pair {
 }
 
 impl Pair {
-    pub unsafe fn alloc(mm: &mut SemiSpaceMemory, current: NonNull<Scope>) -> NonNull<Pair> {
-        let r = mm.alloc(current, std::mem::size_of::<Self>()).as_ptr();
+    pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Pair> {
+        let r = vms.alloc(std::mem::size_of::<Self>());
         let r = r as *mut Pair;
         NonNull::new_unchecked(r)
     }

@@ -34,7 +34,8 @@ pub unsafe fn evaluate(e: Slot, env: Slot) -> Slot {
             panic!("cannot evaluate")
         }
     } else {
-        car(e);
+        let first = car(e);
+        // eq(e, make_symbol)
         todo!()
     }
     todo!()

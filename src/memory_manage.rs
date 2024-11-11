@@ -132,7 +132,7 @@ impl SemiSpaceMemory {
             ObjectTag::Number => (obj as *mut Number).as_ref().unwrap_unchecked().length(),
             ObjectTag::Pair => (obj as *mut Pair).as_ref().unwrap_unchecked().length(),
             ObjectTag::Vector => (obj as *mut Vector).as_ref().unwrap_unchecked().length(),
-            ObjectTag::String => (obj as *mut String).as_ref().unwrap_unchecked().length(),
+            ObjectTag::String => (obj as *mut SingleByteString).as_ref().unwrap_unchecked().length(),
             ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap_unchecked().length(),
             ObjectTag::Closure => todo!(),
             ObjectTag::NativeFunction => unimplemented!(),

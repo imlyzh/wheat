@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 libc = "0.2"
+sexpr_ir = { git="https://github.com/imlyzh/sexpr_ir.git" }
 
 # [target.'cfg(windows)'.dependencies]
 # winapi = { version = "0.3", features = ["sysinfoapi", "memoryapi"] }

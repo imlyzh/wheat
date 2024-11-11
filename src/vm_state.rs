@@ -1,4 +1,4 @@
-use std::ptr::NonNull;
+use std::{collections::HashSet, ptr::NonNull};
 
 use crate::{
     memory_manage::SemiSpaceMemory,
@@ -10,6 +10,7 @@ use crate::{
 pub struct VMState {
     pub heap: SemiSpaceMemory,
     pub current: NonNull<Scope>,
+    pub symbol_cache: NonNull<HashSet<String>>,
 }
 
 impl VMState {
@@ -29,6 +30,28 @@ impl VMState {
         Self {
             heap: self.heap.clone(),
             current: NonNull::new(scope as *mut Scope).unwrap_unchecked(),
+            symbol_cache: NonNull::new(Box::leak(Box::new(HashSet::new()))).unwrap(),
         }
+    }
+
+    pub unsafe fn symbol_register(&mut self, s: &str) -> Slot {
+        let r = &mut (*self.symbol_cache.as_mut());
+        let value = if let Some(r) = r.get(s) {
+            r as *const String as *mut String
+        } else {
+            r.insert(s.to_owned());
+            r.get(s).unwrap_unchecked() as *const String as *mut String
+        };
+
+        let value = NonNull::new(value).unwrap();
+        let r = self.alloc(std::mem::size_of::<Symbol>());
+        *(r as *mut Symbol) = Symbol {
+            head: ObjectHead {
+                tag: ObjectTag::Symbol,
+                moved: false,
+            },
+            value,
+        };
+        return r;
     }
 }

@@ -3,7 +3,7 @@ use std::ptr::NonNull;
 use crate::{memory_manage::SemiSpaceMemory, scope_model::Scope, vm_state::VMState};
 
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ObjectTag {
     Null = 0,
     Bool,
@@ -19,7 +19,7 @@ pub enum ObjectTag {
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ObjectHead {
     pub tag: ObjectTag,
     pub moved: bool,
@@ -136,21 +136,22 @@ impl Length for Vector {
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct String {
+pub struct SingleByteString {
     pub head: ObjectHead,
     pub length: u64,
     pub instance: [u8; 1],
 }
 
-impl Length for String {
+impl Length for SingleByteString {
     fn length(&self) -> usize {
         std::mem::size_of::<Self>() + (self.length as usize - 1) * std::mem::size_of::<u8>()
     }
 }
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Hash, Copy, Eq, PartialOrd, Ord)]
 pub struct Symbol {
+    pub head: ObjectHead,
     pub value: NonNull<String>,
 }
 
@@ -217,9 +218,9 @@ pub unsafe fn assert_get_vector(obj: Slot) -> Vector {
 }
 
 #[inline(always)]
-pub unsafe fn assert_get_string(obj: Slot) -> String {
+pub unsafe fn assert_get_string(obj: Slot) -> SingleByteString {
     assert_eq!(get_tag(obj), ObjectTag::Pair);
-    let r = obj as *mut String;
+    let r = obj as *mut SingleByteString;
     *r
 }
 

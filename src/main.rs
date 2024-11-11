@@ -1,7 +1,6 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     io::{stdin, stdout, Write},
-    ptr::NonNull,
 };
 
 use wheat::{

@@ -1,6 +1,6 @@
 use crate::{
     make_object::make_bool,
-    object_model::{assert_get_bool, get_tag, ObjectTag, Slot},
+    object_model::{assert_get_bool, ObjectTag, Slot},
     object_operator::{pair::car, tageq::*},
 };
 

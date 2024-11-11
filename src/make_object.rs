@@ -64,7 +64,6 @@ pub unsafe fn make_integer(vms: &mut VMState, v: i64) -> Slot {
     r
 }
 
-
 #[inline]
 pub unsafe fn make_pair(vms: &mut VMState, car: Slot, cdr: Slot) -> Slot {
     let r = vms.alloc(std::mem::size_of::<Pair>());

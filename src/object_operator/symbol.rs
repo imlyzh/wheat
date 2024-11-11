@@ -1,4 +1,4 @@
-use crate::object_model::{Slot, assert_get_symbol};
+use crate::object_model::{assert_get_symbol, Slot};
 
 /// # Symbol
 

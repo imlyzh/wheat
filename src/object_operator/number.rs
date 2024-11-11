@@ -1,5 +1,5 @@
-use crate::object_model::*;
 use crate::make_object::*;
+use crate::object_model::*;
 
 /// # number
 
@@ -83,8 +83,6 @@ pub unsafe fn raw_math_greater_eq(x0: Slot, x1: Slot) -> bool {
     (*ptr0).value >= (*ptr1).value
 }
 
-
-
 macro_rules! unwary_bool_op_to_wheat {
     ($name:ident, $raw_name:ident) => {
         #[inline]
@@ -140,7 +138,6 @@ pub unsafe fn raw_math_sub(x0: Slot, x1: Slot) -> i64 {
     (*ptr0).value - (*ptr1).value
 }
 
-
 #[inline]
 pub unsafe fn raw_math_mul(x0: Slot, x1: Slot) -> i64 {
     assert_eq!(get_tag(x0), ObjectTag::Number);
@@ -173,7 +170,13 @@ macro_rules! binary_number_op_to_wheat {
         #[inline]
         pub unsafe fn $name(x0: Slot, x1: Slot) -> Slot {
             let r = $raw_name(x0, x1);
-            let r = Number { head: ObjectHead { tag: ObjectTag::Number, moved: false }, value: r };
+            let r = Number {
+                head: ObjectHead {
+                    tag: ObjectTag::Number,
+                    moved: false,
+                },
+                value: r,
+            };
             // alloc
             todo!()
         }

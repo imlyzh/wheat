@@ -1,5 +1,5 @@
-use crate::object_model::*;
 use crate::make_object::*;
+use crate::object_model::*;
 
 /// Char
 

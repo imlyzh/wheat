@@ -109,7 +109,8 @@ impl SemiSpaceMemory {
                 }
                 ObjectTag::Vector => {
                     let len = (*(coped_obj as *mut Vector)).length;
-                    let data = &mut (*(coped_obj as *mut Vector)).instance[0] as *mut *mut ObjectHead;
+                    let data =
+                        &mut (*(coped_obj as *mut Vector)).instance[0] as *mut *mut ObjectHead;
                     for i in 0..(len as usize) {
                         const PTRSIZE: usize = std::mem::size_of::<usize>();
                         *data.add(i * PTRSIZE) = self.copy(free, alloc_cur, *data.add(i * PTRSIZE));
@@ -132,7 +133,10 @@ impl SemiSpaceMemory {
             ObjectTag::Number => (obj as *mut Number).as_ref().unwrap_unchecked().length(),
             ObjectTag::Pair => (obj as *mut Pair).as_ref().unwrap_unchecked().length(),
             ObjectTag::Vector => (obj as *mut Vector).as_ref().unwrap_unchecked().length(),
-            ObjectTag::String => (obj as *mut SingleByteString).as_ref().unwrap_unchecked().length(),
+            ObjectTag::String => (obj as *mut SingleByteString)
+                .as_ref()
+                .unwrap_unchecked()
+                .length(),
             ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap_unchecked().length(),
             ObjectTag::Closure => todo!(),
             ObjectTag::NativeFunction => unimplemented!(),

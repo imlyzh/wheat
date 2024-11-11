@@ -1,8 +1,7 @@
-use crate::object_model::*;
 use crate::make_object::*;
+use crate::object_model::*;
 
 /// # bool
-
 
 macro_rules! gen_raw_is {
     ($name: ident, $expr: expr) => {
@@ -23,7 +22,6 @@ gen_raw_is!(raw_is_string, ObjectTag::String);
 gen_raw_is!(raw_is_symbol, ObjectTag::Symbol);
 gen_raw_is!(raw_is_closure, ObjectTag::Closure);
 gen_raw_is!(raw_is_native, ObjectTag::NativeFunction);
-
 
 macro_rules! gen_is {
     ($name: ident, $expr: expr) => {
@@ -77,7 +75,7 @@ pub unsafe fn eqv(obj0: Slot, obj1: Slot) -> Slot {
     let tag0 = get_tag(obj0);
     let tag1 = get_tag(obj1);
     if tag0 != tag1 {
-        return make_bool(false)
+        return make_bool(false);
     }
     if tag0 as u8 <= ObjectTag::Char as u8 {
         return eq(obj0, obj1);

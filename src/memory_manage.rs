@@ -9,7 +9,7 @@ pub struct SemiSpaceMemory {
     pub start_pointer: *mut u8,
 
     // pointer_compress: bool,
-    alloc_count: usize, // alloc_count <= pool_size
+    pub alloc_count: usize, // alloc_count <= pool_size
     // align: usize,       // Must be greater than default, default == 4B(32bit)
 
     // if pointer_compress enable, pool size <= 4GB

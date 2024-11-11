@@ -8,7 +8,7 @@ use sexpr_ir::{
     syntax::sexpr::one_unit_parse,
 };
 
-pub unsafe fn read(vms: &mut VMState, i: &str) -> Slot {
+pub unsafe fn read_(vms: &mut VMState, i: &str) -> Slot {
     let r = one_unit_parse(i, "<read>").unwrap();
     gast2slot(vms, &r)
 }

@@ -9,13 +9,20 @@ use crate::{
 #[derive(Debug, Clone)]
 pub struct VMState {
     pub heap: SemiSpaceMemory,
-    pub current: NonNull<Scope>,
-    pub symbol_cache: NonNull<HashSet<String>>,
+    pub current: Option<NonNull<Scope>>,
+    pub symbol_cache: HashSet<String>,
 }
 
 impl VMState {
     pub unsafe fn alloc(&mut self, size: usize) -> Slot {
-        self.heap.alloc(self.current, size).as_mut()
+        if let Some(current) = self.current {
+            self.heap.alloc(current, size).as_mut()
+        } else {
+            // FIXME
+            let r = self.heap.start_pointer.add(self.heap.alloc_count) as Slot;
+            self.heap.alloc_count += size;
+            r
+        }
     }
     pub unsafe fn new_scope(&mut self, variable: Slot, name: Option<Symbol>) -> Self {
         let scope = self.alloc(std::mem::size_of::<Scope>());
@@ -26,16 +33,16 @@ impl VMState {
         };
         scope_ref.name = name;
         scope_ref.pointer = variable;
-        scope_ref.prev = Some(self.current);
+        scope_ref.prev = self.current;
         Self {
             heap: self.heap.clone(),
-            current: NonNull::new(scope as *mut Scope).unwrap_unchecked(),
-            symbol_cache: NonNull::new(Box::leak(Box::new(HashSet::new()))).unwrap(),
+            current: Some(NonNull::new(scope as *mut Scope).unwrap_unchecked()),
+            symbol_cache: HashSet::new(),
         }
     }
 
     pub unsafe fn symbol_register(&mut self, s: &str) -> Slot {
-        let r = &mut (*self.symbol_cache.as_mut());
+        let r = &mut self.symbol_cache;
         let value = if let Some(r) = r.get(s) {
             r as *const String as *mut String
         } else {

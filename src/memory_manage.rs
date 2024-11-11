@@ -64,10 +64,10 @@ impl SemiSpaceMemory {
         current: Option<NonNull<Scope>>,
         alloc_size: usize,
     ) -> NonNull<ObjectHead> {
-        if !self.alloc_count + alloc_size >= self.size_limit {
+        if self.alloc_count + alloc_size >= self.size_limit {
             self.gc(current);
         }
-        if !self.alloc_count + alloc_size >= self.size_limit {
+        if self.alloc_count + alloc_size >= self.size_limit {
             panic!("out of memory")
         }
         let ret_ptr = self.start_pointer.add(self.alloc_count);

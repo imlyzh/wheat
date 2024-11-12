@@ -40,7 +40,7 @@ impl SingleData {
     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<SingleData> {
         let r = vms.alloc(std::mem::size_of::<Self>());
         let r = r as *mut SingleData;
-        NonNull::new_unchecked(r)
+        NonNull::new(r).unwrap()
     }
 }
 
@@ -94,7 +94,7 @@ impl Number {
     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Number> {
         let r = vms.alloc(std::mem::size_of::<Self>());
         let r = r as *mut Number;
-        NonNull::new_unchecked(r)
+        NonNull::new(r).unwrap()
     }
 }
 
@@ -116,7 +116,7 @@ impl Pair {
     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Pair> {
         let r = vms.alloc(std::mem::size_of::<Self>());
         let r = r as *mut Pair;
-        NonNull::new_unchecked(r)
+        NonNull::new(r).unwrap()
     }
 }
 

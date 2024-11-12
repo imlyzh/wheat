@@ -34,7 +34,7 @@ impl VMState {
         scope_ref.prev = self.current;
         Self {
             heap: self.heap.clone(),
-            current: Some(NonNull::new(scope as *mut Scope).unwrap_unchecked()),
+            current: Some(NonNull::new(scope as *mut Scope).unwrap()),
             symbol_cache: HashSet::new(),
         }
     }
@@ -45,7 +45,7 @@ impl VMState {
             r as *const String as *mut String
         } else {
             r.insert(s.to_owned());
-            r.get(s).unwrap_unchecked() as *const String as *mut String
+            r.get(s).unwrap() as *const String as *mut String
         };
 
         let value = NonNull::new(value).unwrap();

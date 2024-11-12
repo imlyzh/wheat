@@ -58,12 +58,22 @@ impl SemiSpaceMemory {
     }
 }
 
+pub fn align(alloc_size: usize) -> usize {
+    let append_size = alloc_size % 0x8;
+    if append_size == 0 {
+        alloc_size
+    } else {
+        alloc_size + (0x8 - append_size)
+    }
+}
+
 impl SemiSpaceMemory {
     pub unsafe fn alloc(
         &mut self,
         current: Option<NonNull<Scope>>,
         alloc_size: usize,
     ) -> NonNull<ObjectHead> {
+        let alloc_size = align(alloc_size);
         if self.alloc_count + alloc_size >= self.size_limit {
             self.gc(current);
         }
@@ -72,7 +82,7 @@ impl SemiSpaceMemory {
         }
         let ret_ptr = self.start_pointer.add(self.alloc_count);
         self.alloc_count += alloc_size;
-        NonNull::new_unchecked(ret_ptr as *mut ObjectHead)
+        NonNull::new(ret_ptr as *mut ObjectHead).unwrap()
     }
 
     pub unsafe fn gc(&mut self, current: Option<NonNull<Scope>>) {
@@ -126,18 +136,14 @@ impl SemiSpaceMemory {
 
     unsafe fn copy_data(&mut self, free: *mut u8, alloc_cur: &mut usize, obj: Slot) -> Slot {
         let obj_size = match get_tag(obj) {
-            ObjectTag::Null | ObjectTag::Bool | ObjectTag::Char => (obj as *mut SingleData)
-                .as_ref()
-                .unwrap_unchecked()
-                .length(),
-            ObjectTag::Number => (obj as *mut Number).as_ref().unwrap_unchecked().length(),
-            ObjectTag::Pair => (obj as *mut Pair).as_ref().unwrap_unchecked().length(),
-            ObjectTag::Vector => (obj as *mut Vector).as_ref().unwrap_unchecked().length(),
-            ObjectTag::String => (obj as *mut SingleByteString)
-                .as_ref()
-                .unwrap_unchecked()
-                .length(),
-            ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap_unchecked().length(),
+            ObjectTag::Null | ObjectTag::Bool | ObjectTag::Char => {
+                (obj as *mut SingleData).as_ref().unwrap().length()
+            }
+            ObjectTag::Number => (obj as *mut Number).as_ref().unwrap().length(),
+            ObjectTag::Pair => (obj as *mut Pair).as_ref().unwrap().length(),
+            ObjectTag::Vector => (obj as *mut Vector).as_ref().unwrap().length(),
+            ObjectTag::String => (obj as *mut SingleByteString).as_ref().unwrap().length(),
+            ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap().length(),
             ObjectTag::Closure => todo!(),
             ObjectTag::NativeFunction => unimplemented!(),
             ObjectTag::Opaque => unimplemented!(),

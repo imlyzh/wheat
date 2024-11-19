@@ -1,4 +1,6 @@
-use crate::{object_model::*, vm_state::VMState};
+use std::alloc::Layout;
+
+use crate::{object_model::*, vm::vm_state::VMState};
 
 pub static NULL: SingleData = SingleData {
     head: ObjectHead {

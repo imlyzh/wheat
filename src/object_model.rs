@@ -1,6 +1,6 @@
 use std::ptr::NonNull;
 
-use crate::{memory_manage::SemiSpaceMemory, scope_model::Scope, vm_state::VMState};
+use crate::vm::vm_state::VMState;
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]

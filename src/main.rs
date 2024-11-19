@@ -6,7 +6,7 @@ use std::{
 use wheat::{
     memory_manage::{page_size::{_4K, _64K}, SemiSpaceMemory},
     object_operator::read::read_,
-    vm_state::VMState,
+    vm::vm_state::VMState,
 };
 
 fn main() {

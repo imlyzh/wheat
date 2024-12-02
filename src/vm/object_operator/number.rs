@@ -172,6 +172,8 @@ macro_rules! binary_number_op_to_wheat {
             let r = $raw_name(x0, x1);
             let r = Number {
                 head: ObjectHead {
+                    __align32: 0,
+                    __align16: 0,
                     tag: ObjectTag::Number,
                     moved: false,
                 },

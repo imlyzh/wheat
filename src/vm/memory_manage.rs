@@ -1,6 +1,6 @@
 use std::ptr::NonNull;
 
-use crate::{object_model::*, scope_model::Scope};
+use super::object_model::*;
 
 #[derive(Debug, Clone)]
 pub struct SemiSpaceMemory {
@@ -68,40 +68,30 @@ pub fn align(alloc_size: usize) -> usize {
 }
 
 impl SemiSpaceMemory {
-    pub unsafe fn alloc(
-        &mut self,
-        current: Option<NonNull<Scope>>,
-        alloc_size: usize,
-    ) -> NonNull<ObjectHead> {
+    pub fn alloc(&mut self, alloc_size: usize) -> Option<NonNull<ObjectHead>> {
         let alloc_size = align(alloc_size);
         if self.alloc_count + alloc_size >= self.size_limit {
-            self.gc(current);
+            return None;
         }
-        if self.alloc_count + alloc_size >= self.size_limit {
-            panic!("out of memory")
-        }
-        let ret_ptr = self.start_pointer.add(self.alloc_count);
+        let ret_ptr = unsafe { self.start_pointer.add(self.alloc_count) };
         self.alloc_count += alloc_size;
-        NonNull::new(ret_ptr as *mut ObjectHead).unwrap()
+        Some(NonNull::new(ret_ptr as *mut ObjectHead).unwrap())
     }
 
-    pub unsafe fn gc(&mut self, current: Option<NonNull<Scope>>) {
+    pub unsafe fn gc(&mut self, root_objects: (&mut Slot, &mut Slot, &mut Slot)) {
         let free = if self.start_pointer == self.pool0 {
             self.pool1
         } else {
             self.pool0
         };
         let mut alloc_cur: usize = 0;
-        let mut current = current;
-        loop {
-            if current.is_none() {
-                break;
-            }
-            let mut cur = current.unwrap();
-            let r = self.copy(free, &mut alloc_cur, cur.as_ref().pointer);
-            cur.as_mut().pointer = r;
-            current = cur.as_ref().prev;
-        }
+        let r = self.copy(free, &mut alloc_cur, *root_objects.0);
+        *root_objects.0 = r;
+        let r = self.copy(free, &mut alloc_cur, *root_objects.1);
+        *root_objects.1 = r;
+        let r = self.copy(free, &mut alloc_cur, *root_objects.2);
+        *root_objects.2 = r;
+
         self.start_pointer = free;
         self.alloc_count = alloc_cur;
     }
@@ -148,6 +138,7 @@ impl SemiSpaceMemory {
             ObjectTag::NativeFunction => unimplemented!(),
             ObjectTag::Opaque => unimplemented!(),
         };
+        let obj_size = align(obj_size);
         if *alloc_cur + obj_size >= self.size_limit {
             panic!("gc: out of memory")
         }

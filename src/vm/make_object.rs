@@ -1,9 +1,10 @@
-use std::alloc::Layout;
-
-use crate::{object_model::*, vm::vm_state::VMState};
+use super::object_model::*;
+use super::vm_state::VMState;
 
 pub static NULL: SingleData = SingleData {
     head: ObjectHead {
+        __align32: 0,
+        __align16: 0,
         tag: ObjectTag::Null,
         moved: true,
     },
@@ -12,6 +13,8 @@ pub static NULL: SingleData = SingleData {
 
 pub static FALSE: SingleData = SingleData {
     head: ObjectHead {
+        __align32: 0,
+        __align16: 0,
         tag: ObjectTag::Bool,
         moved: true,
     },
@@ -20,6 +23,8 @@ pub static FALSE: SingleData = SingleData {
 
 pub static TRUE: SingleData = SingleData {
     head: ObjectHead {
+        __align32: 0,
+        __align16: 0,
         tag: ObjectTag::Bool,
         moved: true,
     },
@@ -42,9 +47,11 @@ pub fn make_bool(b: bool) -> Slot {
 
 #[inline]
 pub unsafe fn make_char(vms: &mut VMState, v: u8) -> Slot {
-    let r = vms.alloc(std::mem::size_of::<SingleData>());
+    let r: *mut ObjectHead = vms.alloc_with_gc(std::mem::size_of::<SingleData>());
     *(r as *mut SingleData) = SingleData {
         head: ObjectHead {
+            __align32: 0,
+            __align16: 0,
             tag: ObjectTag::Char,
             moved: false,
         },
@@ -55,9 +62,11 @@ pub unsafe fn make_char(vms: &mut VMState, v: u8) -> Slot {
 
 #[inline]
 pub unsafe fn make_integer(vms: &mut VMState, v: i64) -> Slot {
-    let r = vms.alloc(std::mem::size_of::<Number>());
+    let r = vms.alloc_with_gc(std::mem::size_of::<Number>());
     *(r as *mut Number) = Number {
         head: ObjectHead {
+            __align32: 0,
+            __align16: 0,
             tag: ObjectTag::Char,
             moved: false,
         },
@@ -68,7 +77,7 @@ pub unsafe fn make_integer(vms: &mut VMState, v: i64) -> Slot {
 
 #[inline]
 pub unsafe fn make_pair(vms: &mut VMState, car: Slot, cdr: Slot) -> Slot {
-    let r = vms.alloc(std::mem::size_of::<Pair>());
+    let r = vms.alloc_with_gc(std::mem::size_of::<Pair>());
     let r_ref = r as *mut Pair;
     (*r_ref).car = car;
     (*r_ref).cdr = cdr;
@@ -84,9 +93,11 @@ pub unsafe fn make_symbol(vms: &mut VMState, sym: &str) -> Slot {
 
 pub unsafe fn make_string(vms: &mut VMState, k: usize) -> Slot {
     // assert_eq!(get_tag(k), ObjectTag::Number);
-    let v = vms.alloc(std::mem::size_of::<SingleByteString>() + k - 1);
+    let v = vms.alloc_with_gc(std::mem::size_of::<SingleByteString>() + k - 1);
     let strv = v as *mut SingleByteString;
     (*strv).head = ObjectHead {
+        __align32: 0,
+        __align16: 0,
         tag: ObjectTag::String,
         moved: false,
     };

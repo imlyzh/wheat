@@ -133,6 +133,8 @@ macro_rules! binary_number_op_to_wheat {
             let r = $raw_name(x0, x1);
             let _r = SingleData {
                 head: ObjectHead {
+                    __align32: 0,
+                    __align16: 0,
                     tag: ObjectTag::Char,
                     moved: false,
                 },
@@ -156,6 +158,8 @@ pub unsafe fn char2int(obj: Slot) -> Slot {
     let value = (*ptr).value as i64;
     let _v = Number {
         head: ObjectHead {
+            __align32: 0,
+            __align16: 0,
             tag: ObjectTag::Number,
             moved: false,
         },
@@ -171,6 +175,8 @@ pub unsafe fn int2char(obj: Slot) -> Slot {
     let value = (*ptr).value as u8;
     let _v = SingleData {
         head: ObjectHead {
+            __align32: 0,
+            __align16: 0,
             tag: ObjectTag::Char,
             moved: false,
         },

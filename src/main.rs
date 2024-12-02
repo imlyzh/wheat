@@ -4,18 +4,20 @@ use std::{
 };
 
 use wheat::{
-    memory_manage::{page_size::{_4K, _64K}, SemiSpaceMemory},
+    memory_manage::SemiSpaceMemory,
     object_operator::read::read_,
-    vm::vm_state::VMState,
+    vm::{make_object::NULL, vm_state::VMState},
 };
 
 fn main() {
     println!("wheat programming language. Copyright 2024 lyzh");
     unsafe {
         let mut vms = VMState {
-            heap: SemiSpaceMemory::init(_4K, false),
-            current: None,
+            heap: SemiSpaceMemory::init(200, false),
             symbol_cache: HashSet::new(),
+            accumulator: NULL,
+            environment: NULL,
+            stack: NULL,
         };
         loop {
             print!("> ");

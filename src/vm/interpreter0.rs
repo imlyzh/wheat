@@ -1,7 +1,8 @@
-use crate::{
+use crate::object_operator::{pair::car, tageq::*};
+
+use super::{
     make_object::make_bool,
     object_model::{assert_get_bool, ObjectTag, Slot},
-    object_operator::{pair::car, tageq::*},
 };
 
 pub unsafe fn is_atom(i: Slot) -> bool {

@@ -21,6 +21,8 @@ pub enum ObjectTag {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ObjectHead {
+    pub __align32: u32,
+    pub __align16: u16,
     pub tag: ObjectTag,
     pub moved: bool,
 }
@@ -38,7 +40,7 @@ pub struct SingleData {
 
 impl SingleData {
     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<SingleData> {
-        let r = vms.alloc(std::mem::size_of::<Self>());
+        let r = vms.alloc_with_gc(std::mem::size_of::<Self>());
         let r = r as *mut SingleData;
         NonNull::new(r).unwrap()
     }
@@ -49,33 +51,6 @@ impl Length for SingleData {
         std::mem::size_of::<Self>()
     }
 }
-
-// #[repr(C)]
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-// pub struct Bool {
-//     pub head: ObjectHead,
-//     // pub is_signed: bool,
-//     pub value: bool,
-// }
-
-// impl Length for Bool {
-//     fn length(&self) -> usize {
-//         std::mem::size_of::<Self>()
-//     }
-// }
-
-// #[repr(C)]
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-// pub struct Char {
-//     pub head: ObjectHead,
-//     pub value: u8,
-// }
-
-// impl Length for Char {
-//     fn length(&self) -> usize {
-//         std::mem::size_of::<Self>()
-//     }
-// }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -92,7 +67,7 @@ impl Length for Number {
 
 impl Number {
     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Number> {
-        let r = vms.alloc(std::mem::size_of::<Self>());
+        let r = vms.alloc_with_gc(std::mem::size_of::<Self>());
         let r = r as *mut Number;
         NonNull::new(r).unwrap()
     }
@@ -114,7 +89,7 @@ impl Length for Pair {
 
 impl Pair {
     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Pair> {
-        let r = vms.alloc(std::mem::size_of::<Self>());
+        let r = vms.alloc_with_gc(std::mem::size_of::<Self>());
         let r = r as *mut Pair;
         NonNull::new(r).unwrap()
     }

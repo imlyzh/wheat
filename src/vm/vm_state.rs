@@ -1,42 +1,42 @@
 use std::{collections::HashSet, ptr::NonNull};
 
-use crate::{
+use super::{
     memory_manage::SemiSpaceMemory,
     object_model::{ObjectHead, ObjectTag, Slot, Symbol},
-    scope_model::Scope,
 };
 
 #[derive(Debug, Clone)]
 pub struct VMState {
+    pub accumulator: Slot,
+    pub environment: Slot,
+    pub stack: Slot,
+
     pub heap: SemiSpaceMemory,
-    pub current: Option<NonNull<Scope>>,
     pub symbol_cache: HashSet<String>,
 }
 
-impl Drop for VMState {
-    fn drop(&mut self) {}
-}
-
 impl VMState {
-    pub unsafe fn alloc(&mut self, size: usize) -> Slot {
-        self.heap.alloc(self.current, size).as_mut()
+    pub fn alloc(&mut self, size: usize) -> Option<Slot> {
+        self.heap.alloc(size).map(|ptr| ptr.as_ptr())
     }
 
-    pub unsafe fn new_scope(&mut self, variable: Slot, name: Option<Symbol>) -> Self {
-        let scope = self.alloc(std::mem::size_of::<Scope>());
-        let scope_ref = &mut (*(scope as *mut Scope));
-        scope_ref.head = ObjectHead {
-            tag: ObjectTag::Opaque,
-            moved: false,
-        };
-        scope_ref.name = name;
-        scope_ref.pointer = variable;
-        scope_ref.prev = self.current;
-        Self {
-            heap: self.heap.clone(),
-            current: Some(NonNull::new(scope as *mut Scope).unwrap()),
-            symbol_cache: HashSet::new(),
+    pub unsafe fn alloc_with_gc(&mut self, size: usize) -> Slot {
+        if let Some(r) = self.alloc(size) {
+            return r;
         }
+        self.gc();
+        if let Some(r) = self.alloc(size) {
+            return r;
+        }
+        panic!("OutOfMemory");
+    }
+
+    pub unsafe fn gc(&mut self) {
+        self.heap.gc((
+            &mut self.accumulator,
+            &mut self.environment,
+            &mut self.stack,
+        ))
     }
 
     pub unsafe fn symbol_register(&mut self, s: &str) -> Slot {
@@ -49,9 +49,11 @@ impl VMState {
         };
 
         let value = NonNull::new(value).unwrap();
-        let r = self.alloc(std::mem::size_of::<Symbol>());
+        let r = self.alloc_with_gc(std::mem::size_of::<Symbol>());
         *(r as *mut Symbol) = Symbol {
             head: ObjectHead {
+                __align32: 0,
+                __align16: 0,
                 tag: ObjectTag::Symbol,
                 moved: false,
             },

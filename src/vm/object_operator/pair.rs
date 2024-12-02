@@ -1,5 +1,5 @@
-use crate::make_object::*;
-use crate::{object_model::*, vm::vm_state::VMState};
+use crate::vm::make_object::*;
+use crate::vm::{object_model::*, vm_state::VMState};
 
 use super::tageq::{eq, eqv};
 

@@ -3,10 +3,9 @@ use std::{
     io::{stdin, stdout, Write},
 };
 
-use wheat::{
-    memory_manage::SemiSpaceMemory,
-    object_operator::read::read_,
-    vm::{make_object::NULL, vm_state::VMState},
+use wheat::vm::{
+    make_object::make_null, memory_manage::SemiSpaceMemory, object_operator::read::read_,
+    vm_state::VMState,
 };
 
 fn main() {
@@ -15,9 +14,9 @@ fn main() {
         let mut vms = VMState {
             heap: SemiSpaceMemory::init(200, false),
             symbol_cache: HashSet::new(),
-            accumulator: NULL,
-            environment: NULL,
-            stack: NULL,
+            accumulator:  make_null(),
+            environment:  make_null(),
+            stack: make_null(),
         };
         loop {
             print!("> ");

@@ -1,7 +1,7 @@
-use crate::{
+use crate::vm::{
     make_object::*,
     object_model::{SingleByteString, Slot},
-    vm::vm_state::VMState,
+    vm_state::VMState,
 };
 use sexpr_ir::{
     gast::{constant::Constant, GAst},

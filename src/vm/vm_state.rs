@@ -13,7 +13,7 @@ pub struct VMState {
     pub stack: Slot,
 
     pub heap: SemiSpaceMemory,
-    pub symbol_cache: HashMap<String, Slot>,
+    pub symbol_cache: HashMap<String, *const String>,
     pub hidden_class_cache: HashMap<HiddenKlassHandle, *const HiddenKlass>
 }
 
@@ -45,7 +45,7 @@ impl VMState {
         ))
     }
 
-    pub unsafe fn symbol_register(&mut self, s: &str) -> Slot {
+    pub unsafe fn symbol_register(&mut self, s: &str) -> *const String {
         let r = &mut self.symbol_cache;
         if let Some(r) = r.get(s) {
             *r

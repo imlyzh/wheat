@@ -89,7 +89,7 @@ pub unsafe fn make_integer(vms: &mut VMState, v: i64) -> Slot {
 /// # String
 
 #[inline]
-pub unsafe fn make_symbol(vms: &mut VMState, sym: &str) -> Slot {
+pub unsafe fn make_symbol(vms: &mut VMState, sym: &str) -> *const String {
     let v = vms.alloc_with_gc(std::mem::size_of::<SingleByteString>() + sym.len() - 1);
     let strv = v as *mut SingleByteString;
     (*strv).head = ObjectHead {
@@ -100,7 +100,7 @@ pub unsafe fn make_symbol(vms: &mut VMState, sym: &str) -> Slot {
     };
     (*strv).length = sym.len();
     std::ptr::copy(sym.as_ptr(), (*strv).instance.as_mut_ptr(), sym.len());
-    v
+    v as *const String
 }
 
 #[inline]

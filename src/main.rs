@@ -13,20 +13,12 @@ fn main() {
     unsafe {
         let mut vms = VMState {
             heap: SemiSpaceMemory::init(200, false),
+            hidden_class_cache: HashMap::new(),
             symbol_cache: HashMap::new(),
             accumulator:  make_null(),
             environment:  make_null(),
             stack: make_null(),
             current_codes: make_null(),
         };
-        loop {
-            print!("> ");
-            stdout().flush().unwrap();
-            let mut input_buf = "".to_string();
-            stdin().read_line(&mut input_buf).unwrap();
-            let slot = read_(&mut vms, &input_buf);
-            println!("slot pointer: {:?}", slot);
-            println!("alloc counter: {:?}", vms.heap.alloc_count);
-        }
     }
 }

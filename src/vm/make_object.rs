@@ -75,14 +75,14 @@ pub unsafe fn make_integer(vms: &mut VMState, v: i64) -> Slot {
     r
 }
 
-#[inline]
-pub unsafe fn make_pair(vms: &mut VMState, car: Slot, cdr: Slot) -> Slot {
-    let r = vms.alloc_with_gc(std::mem::size_of::<Pair>());
-    let r_ref = r as *mut Pair;
-    (*r_ref).car = car;
-    (*r_ref).cdr = cdr;
-    r
-}
+// #[inline]
+// pub unsafe fn make_pair(vms: &mut VMState, car: Slot, cdr: Slot) -> Slot {
+//     let r = vms.alloc_with_gc(std::mem::size_of::<Pair>());
+//     let r_ref = r as *mut Pair;
+//     (*r_ref).car = car;
+//     (*r_ref).cdr = cdr;
+//     r
+// }
 
 /// # String
 

@@ -72,27 +72,27 @@ impl Number {
     }
 }
 
-#[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Pair {
-    pub head: ObjectHead,
-    pub car: Slot,
-    pub cdr: Slot,
-}
+// #[repr(C)]
+// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+// pub struct Pair {
+//     pub head: ObjectHead,
+//     pub car: Slot,
+//     pub cdr: Slot,
+// }
 
-impl Length for Pair {
-    fn length(&self) -> usize {
-        std::mem::size_of::<Self>()
-    }
-}
+// impl Length for Pair {
+//     fn length(&self) -> usize {
+//         std::mem::size_of::<Self>()
+//     }
+// }
 
-impl Pair {
-    pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Pair> {
-        let r = vms.alloc_with_gc(std::mem::size_of::<Self>());
-        let r = r as *mut Pair;
-        NonNull::new(r).unwrap()
-    }
-}
+// impl Pair {
+//     pub unsafe fn alloc(vms: &mut VMState) -> NonNull<Pair> {
+//         let r = vms.alloc_with_gc(std::mem::size_of::<Self>());
+//         let r = r as *mut Pair;
+//         NonNull::new(r).unwrap()
+//     }
+// }
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

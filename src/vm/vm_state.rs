@@ -1,9 +1,8 @@
-use std::{collections::{HashMap, HashSet}, ptr::NonNull};
+use std::collections::HashMap;
 
-use crate::vm::object_model::assert_get_number;
 
 use super::{
-    make_object::make_symbol, memory_manage::SemiSpaceMemory, object_model::{ObjectHead, ObjectTag, Slot, Symbol}, object_operator::{, tageq::is_symbol}
+    make_object::make_symbol, memory_manage::SemiSpaceMemory, object_model::Slot
 };
 
 #[derive(Debug, Clone)]

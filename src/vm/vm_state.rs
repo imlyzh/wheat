@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 
 use super::{
-    make_object::make_symbol, memory_manage::SemiSpaceMemory, object_model::Slot
+    make_object::make_symbol, memory_manage::SemiSpaceMemory, object_model::{HiddenKlass, HiddenKlassHandle, Slot}
 };
 
 #[derive(Debug, Clone)]
@@ -14,6 +14,7 @@ pub struct VMState {
 
     pub heap: SemiSpaceMemory,
     pub symbol_cache: HashMap<String, Slot>,
+    pub hidden_class_cache: HashMap<HiddenKlassHandle, *const HiddenKlass>
 }
 
 pub unsafe fn run(vms: &mut VMState) -> Slot {

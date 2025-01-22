@@ -1,4 +1,4 @@
-use std::ptr::NonNull;
+use std::{hash::Hash, ptr::NonNull};
 
 use crate::vm::vm_state::VMState;
 
@@ -95,9 +95,20 @@ impl Number {
 //     }
 // }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HiddenKlass {
     pub prev: *const HiddenKlass,
     pub name: *const Symbol,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct HiddenKlassHandle(pub *const HiddenKlass);
+
+impl Hash for HiddenKlass {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.prev.hash(state);
+        self.name.hash(state);
+    }
 }
 
 #[repr(C)]

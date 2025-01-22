@@ -12,6 +12,7 @@ pub enum ObjectTag {
     Vector,
     String,
     Symbol,
+    Object,
     Closure,
     NativeFunction,
     Opaque,
@@ -93,6 +94,27 @@ impl Number {
 //         NonNull::new(r).unwrap()
 //     }
 // }
+
+pub struct HiddenKlass {
+    pub prev: *const HiddenKlass,
+    pub name: *const Symbol,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Object {
+    pub head: ObjectHead,
+    pub klass: *const HiddenKlass,
+    pub descriptor: Slot,
+    pub element: Slot,
+    pub instance: [Slot; 7],
+}
+
+impl Length for Object {
+    fn length(&self) -> usize {
+        std::mem::size_of::<Self>()
+    }
+}
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

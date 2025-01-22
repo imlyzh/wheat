@@ -127,6 +127,7 @@ impl SemiSpaceMemory {
             ObjectTag::Vector => (obj as *mut Vector).as_ref().unwrap().length(),
             ObjectTag::String => (obj as *mut SingleByteString).as_ref().unwrap().length(),
             ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap().length(),
+            ObjectTag::Object => todo!(),
             ObjectTag::Closure => todo!(),
             ObjectTag::NativeFunction => unimplemented!(),
             ObjectTag::Opaque => unimplemented!(),

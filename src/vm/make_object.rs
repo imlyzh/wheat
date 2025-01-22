@@ -1,3 +1,5 @@
+use std::ptr::{null, null_mut};
+
 use super::object_model::*;
 use super::vm_state::VMState;
 
@@ -121,6 +123,24 @@ pub unsafe fn make_uninited_string(vms: &mut VMState, len: usize) -> Slot {
     };
     (*strv).length = len;
     v
+}
+
+#[inline]
+pub unsafe fn make_object(vms: &mut VMState) -> Slot {
+    let r: *mut ObjectHead = vms.alloc_with_gc(std::mem::size_of::<Object>());
+    *(r as *mut Object) = Object {
+        head: ObjectHead {
+            __align32: 0,
+            __align16: 0,
+            tag: ObjectTag::Char,
+            moved: false,
+        },
+        klass: null(),
+        descriptor: null_mut() as *mut ObjectHead,
+        element: null_mut() as Slot,
+        instance: [null_mut() as Slot; 7],
+    };
+    r
 }
 
 // pub unsafe fn make_string_with_fill(k: Slot, char: Slot) -> Slot {

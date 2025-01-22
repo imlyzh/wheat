@@ -4,7 +4,7 @@ use std::{
 };
 
 use wheat::vm::{
-    make_object::make_null, memory_manage::SemiSpaceMemory, object_operator::read::read_,
+    make_object::make_null, memory_manage::SemiSpaceMemory,
     vm_state::VMState,
 };
 

@@ -1,18 +1,24 @@
-use std::{collections::HashSet, ptr::NonNull};
+use std::{collections::{HashMap, HashSet}, ptr::NonNull};
+
+use crate::vm::object_model::assert_get_number;
 
 use super::{
-    memory_manage::SemiSpaceMemory,
-    object_model::{ObjectHead, ObjectTag, Slot, Symbol},
+    make_object::make_symbol, memory_manage::SemiSpaceMemory, object_model::{ObjectHead, ObjectTag, Slot, Symbol}, object_operator::{, tageq::is_symbol}
 };
 
 #[derive(Debug, Clone)]
 pub struct VMState {
     pub accumulator: Slot,
+    pub current_codes: Slot,
     pub environment: Slot,
     pub stack: Slot,
 
     pub heap: SemiSpaceMemory,
-    pub symbol_cache: HashSet<String>,
+    pub symbol_cache: HashMap<String, Slot>,
+}
+
+pub unsafe fn run(vms: &mut VMState) -> Slot {
+    todo!()
 }
 
 impl VMState {
@@ -41,24 +47,12 @@ impl VMState {
 
     pub unsafe fn symbol_register(&mut self, s: &str) -> Slot {
         let r = &mut self.symbol_cache;
-        let value = if let Some(r) = r.get(s) {
-            r as *const String as *mut String
+        if let Some(r) = r.get(s) {
+            *r
         } else {
-            r.insert(s.to_owned());
-            r.get(s).unwrap() as *const String as *mut String
-        };
-
-        let value = NonNull::new(value).unwrap();
-        let r = self.alloc_with_gc(std::mem::size_of::<Symbol>());
-        *(r as *mut Symbol) = Symbol {
-            head: ObjectHead {
-                __align32: 0,
-                __align16: 0,
-                tag: ObjectTag::Symbol,
-                moved: false,
-            },
-            value,
-        };
-        return r;
+            let r = make_symbol(self, s);
+            self.symbol_cache.insert(s.to_owned(),            r         );
+            r
+        }
     }
 }

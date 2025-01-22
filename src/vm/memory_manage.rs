@@ -101,12 +101,6 @@ impl SemiSpaceMemory {
             let coped_obj = self.copy_data(free, alloc_cur, obj);
             (*obj).moved = true;
             match get_tag(coped_obj) {
-                ObjectTag::Pair => {
-                    (*(coped_obj as *mut Pair)).car =
-                        self.copy(free, alloc_cur, (*(coped_obj as *mut Pair)).car);
-                    (*(coped_obj as *mut Pair)).cdr =
-                        self.copy(free, alloc_cur, (*(coped_obj as *mut Pair)).cdr);
-                }
                 ObjectTag::Vector => {
                     let len = (*(coped_obj as *mut Vector)).length;
                     let data =
@@ -130,7 +124,6 @@ impl SemiSpaceMemory {
                 (obj as *mut SingleData).as_ref().unwrap().length()
             }
             ObjectTag::Number => (obj as *mut Number).as_ref().unwrap().length(),
-            ObjectTag::Pair => (obj as *mut Pair).as_ref().unwrap().length(),
             ObjectTag::Vector => (obj as *mut Vector).as_ref().unwrap().length(),
             ObjectTag::String => (obj as *mut SingleByteString).as_ref().unwrap().length(),
             ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap().length(),

@@ -9,7 +9,6 @@ pub enum ObjectTag {
     Bool,
     Char,
     Number,
-    Pair,
     Vector,
     String,
     Symbol,
@@ -179,29 +178,22 @@ pub unsafe fn assert_get_number(obj: Slot) -> i64 {
 }
 
 #[inline(always)]
-pub unsafe fn assert_get_pair(obj: Slot) -> Pair {
-    assert_eq!(get_tag(obj), ObjectTag::Pair);
-    let r = obj as *mut Pair;
-    *r
-}
-
-#[inline(always)]
 pub unsafe fn assert_get_vector(obj: Slot) -> Vector {
-    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    assert_eq!(get_tag(obj), ObjectTag::Vector);
     let r = obj as *mut Vector;
     *r
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_string(obj: Slot) -> SingleByteString {
-    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    assert_eq!(get_tag(obj), ObjectTag::String);
     let r = obj as *mut SingleByteString;
     *r
 }
 
 #[inline(always)]
 pub unsafe fn assert_get_symbol(obj: Slot) -> Symbol {
-    assert_eq!(get_tag(obj), ObjectTag::Pair);
+    assert_eq!(get_tag(obj), ObjectTag::Symbol);
     let r = obj as *mut Symbol;
     *r
 }

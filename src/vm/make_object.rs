@@ -88,12 +88,30 @@ pub unsafe fn make_pair(vms: &mut VMState, car: Slot, cdr: Slot) -> Slot {
 
 #[inline]
 pub unsafe fn make_symbol(vms: &mut VMState, sym: &str) -> Slot {
-    vms.symbol_register(sym)
+    let v = vms.alloc_with_gc(std::mem::size_of::<SingleByteString>() + sym.len() - 1);
+    let strv = v as *mut SingleByteString;
+    (*strv).head = ObjectHead {
+        __align32: 0,
+        __align16: 0,
+        tag: ObjectTag::Symbol,
+        moved: false,
+    };
+    (*strv).length = sym.len();
+    std::ptr::copy(sym.as_ptr(), (*strv).instance.as_mut_ptr(), sym.len());
+    v
 }
 
-pub unsafe fn make_string(vms: &mut VMState, k: usize) -> Slot {
-    // assert_eq!(get_tag(k), ObjectTag::Number);
-    let v = vms.alloc_with_gc(std::mem::size_of::<SingleByteString>() + k - 1);
+#[inline]
+pub unsafe fn make_string(vms: &mut VMState, str: &str) -> Slot {
+    let v = make_uninited_string(vms, str.len());
+    let strv = v as *mut SingleByteString;
+    std::ptr::copy(str.as_ptr(), (*strv).instance.as_mut_ptr(), str.len());
+    v
+}
+
+#[inline]
+pub unsafe fn make_uninited_string(vms: &mut VMState, len: usize) -> Slot {
+    let v = vms.alloc_with_gc(std::mem::size_of::<SingleByteString>() + len - 1);
     let strv = v as *mut SingleByteString;
     (*strv).head = ObjectHead {
         __align32: 0,
@@ -101,7 +119,7 @@ pub unsafe fn make_string(vms: &mut VMState, k: usize) -> Slot {
         tag: ObjectTag::String,
         moved: false,
     };
-    (*strv).length = k;
+    (*strv).length = len;
     v
 }
 

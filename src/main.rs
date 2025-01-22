@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::HashMap,
     io::{stdin, stdout, Write},
 };
 
@@ -13,10 +13,11 @@ fn main() {
     unsafe {
         let mut vms = VMState {
             heap: SemiSpaceMemory::init(200, false),
-            symbol_cache: HashSet::new(),
+            symbol_cache: HashMap::new(),
             accumulator:  make_null(),
             environment:  make_null(),
             stack: make_null(),
+            current_codes: make_null(),
         };
         loop {
             print!("> ");

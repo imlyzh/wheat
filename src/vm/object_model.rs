@@ -95,7 +95,7 @@ impl Number {
 //     }
 // }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, Copy, PartialEq, Eq)]
 pub struct HiddenKlass {
     pub prev: *const HiddenKlass,
     pub name: *const Symbol,
@@ -104,10 +104,9 @@ pub struct HiddenKlass {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HiddenKlassHandle(pub *const HiddenKlass);
 
-impl Hash for HiddenKlass {
+impl Hash for HiddenKlassHandle {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.prev.hash(state);
-        self.name.hash(state);
+        unsafe {self.0.as_ref()}.unwrap().hash(state);
     }
 }
 

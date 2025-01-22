@@ -125,6 +125,20 @@ pub unsafe fn make_uninited_string(vms: &mut VMState, len: usize) -> Slot {
     v
 }
 
+pub unsafe fn make_hidden_class(
+    vms: &mut VMState,
+    prev: *const HiddenKlass,
+    name: *const Symbol,
+) -> *const HiddenKlass {
+    let r = Box::leak(Box::new(HiddenKlass { prev, name })) as *mut HiddenKlass;
+    let query = HiddenKlassHandle(r);
+    if let Some(r) = vms.hidden_class_cache.get(&query) {
+        return *r;
+    }
+    vms.hidden_class_cache.insert(query, r);
+    r
+}
+
 #[inline]
 pub unsafe fn make_object(vms: &mut VMState) -> Slot {
     let r: *mut ObjectHead = vms.alloc_with_gc(std::mem::size_of::<Object>());

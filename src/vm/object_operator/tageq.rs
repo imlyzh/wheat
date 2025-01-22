@@ -42,8 +42,10 @@ gen_is!(is_number, ObjectTag::Number);
 gen_is!(is_vector, ObjectTag::Vector);
 gen_is!(is_string, ObjectTag::String);
 gen_is!(is_symbol, ObjectTag::Symbol);
+gen_is!(is_object, ObjectTag::Object);
+gen_is!(is_hashmap, ObjectTag::HashMap);
 gen_is!(is_closure, ObjectTag::Closure);
-gen_is!(is_native, ObjectTag::NativeFunction);
+// gen_is!(is_native, ObjectTag::NativeFunction);
 
 #[inline]
 pub unsafe fn not(obj: Slot) -> Slot {

@@ -146,14 +146,37 @@ pub unsafe fn make_object(vms: &mut VMState) -> Slot {
         head: ObjectHead {
             __align32: 0,
             __align16: 0,
-            tag: ObjectTag::Char,
+            tag: ObjectTag::Object,
             moved: false,
         },
         klass: null(),
-        descriptor: null_mut() as *mut ObjectHead,
-        element: null_mut() as Slot,
         instance: [null_mut() as Slot; 7],
     };
+    r
+}
+
+#[inline]
+pub unsafe fn make_hashmap(vms: &mut VMState, slot_size: usize) -> Slot {
+    let r: *mut ObjectHead = vms.alloc_with_gc(std::mem::size_of::<HashMap>());
+    let keys = make_vector(vms, slot_size) as *mut Vector;
+    let values = make_vector(vms, slot_size) as *mut Vector;
+    *(r as *mut HashMap) = HashMap {
+        head: ObjectHead {
+            __align32: 0,
+            __align16: 0,
+            tag: ObjectTag::HashMap,
+            moved: false,
+        },
+        descriptor: keys,
+        element: values,
+    };
+    r
+}
+
+pub unsafe fn make_vector(vms: &mut VMState, slot_size: usize) -> Slot {
+    let r: *mut ObjectHead = vms.alloc_with_gc(
+        std::mem::size_of::<Vector>() + (slot_size - 1) * std::mem::size_of::<Slot>(),
+    );
     r
 }
 

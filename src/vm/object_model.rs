@@ -13,9 +13,8 @@ pub enum ObjectTag {
     String,
     Symbol,
     Object,
+    HashMap,
     Closure,
-    NativeFunction,
-    Opaque,
 }
 
 #[repr(C)]
@@ -115,8 +114,6 @@ impl Hash for HiddenKlassHandle {
 pub struct Object {
     pub head: ObjectHead,
     pub klass: *const HiddenKlass,
-    pub descriptor: Slot,
-    pub element: Slot,
     pub instance: [Slot; 7],
 }
 
@@ -124,6 +121,14 @@ impl Length for Object {
     fn length(&self) -> usize {
         std::mem::size_of::<Self>()
     }
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct HashMap {
+    pub head: ObjectHead,
+    pub descriptor: *mut Vector,
+    pub element: *mut Vector,
 }
 
 #[repr(C)]

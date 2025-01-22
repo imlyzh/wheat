@@ -128,9 +128,8 @@ impl SemiSpaceMemory {
             ObjectTag::String => (obj as *mut SingleByteString).as_ref().unwrap().length(),
             ObjectTag::Symbol => (obj as *mut Symbol).as_ref().unwrap().length(),
             ObjectTag::Object => todo!(),
+            ObjectTag::HashMap => todo!(),
             ObjectTag::Closure => todo!(),
-            ObjectTag::NativeFunction => unimplemented!(),
-            ObjectTag::Opaque => unimplemented!(),
         };
         let obj_size = align(obj_size);
         if *alloc_cur + obj_size >= self.size_limit {
